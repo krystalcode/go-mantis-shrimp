@@ -1,0 +1,3 @@
+FROM krystalcode/f_go
+
+EXPOSE 8888

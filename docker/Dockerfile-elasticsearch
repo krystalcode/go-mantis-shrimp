@@ -1,0 +1,4 @@
+FROM krystalcode/o_elasticsearch:5
+
+# Custom elasticsearch configuration.
+COPY elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml

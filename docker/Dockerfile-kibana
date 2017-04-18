@@ -1,0 +1,4 @@
+FROM krystalcode/o_kibana:5
+
+# Custom kibana configuration.
+COPY kibana.yml /usr/share/kibana/config/kibana.yml

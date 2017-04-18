@@ -1,0 +1,85 @@
+version: '2'
+
+services:
+
+  # APIs.
+  engine:
+    # Build.
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-engine
+    image: ms_engine
+
+    # Run.
+    command: sleep infinity
+    container_name: ms_engine
+
+    # Configure.
+    environment:
+      - VIRTUAL_HOST=trigger.mantis-shrimp.localhost
+      - VIRTUAL_PORT=8888
+      - VIRTUAL_NETWORK=nginx-proxy
+
+    links:
+      - elasticsearch
+
+    networks:
+      - proxy-tier
+
+    volumes:
+      - ../../../..:/go
+
+  # Databases.
+  elasticsearch:
+    # Build.
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-elasticsearch
+
+    image: ms_elasticsearch
+
+    # Run.
+    container_name: ms_elasticsearch
+
+    # Configure.
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+
+    # 2GB memory limit - otherwise elasticsearch will eat up all memory.
+    # It will complain and not start if provided less.
+    mem_limit: 2147483648
+
+    networks:
+      - proxy-tier
+
+    volumes:
+      - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/ms/elasticsearch:/usr/share/elasticsearch/data
+
+  # Development tools.
+  kibana:
+    # Build.
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-kibana
+
+    image: ms_kibana
+
+    # Run.
+    container_name: ms_kibana
+
+    # Configure.
+    environment:
+      - VIRTUAL_HOST=kibana.mantis-shrimp.localhost
+      - VIRTUAL_PORT=5601
+      - VIRTUAL_NETWORK=nginx-proxy
+
+    links:
+      - elasticsearch
+
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external:
+      name: nginx-proxy
