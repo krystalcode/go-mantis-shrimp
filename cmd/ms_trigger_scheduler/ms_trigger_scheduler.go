@@ -90,26 +90,6 @@ func run(item Item, triggers chan<- Item) {
 	filter(item, triggers)
 }
 
-// Temporary function that acts as a candidate items source.
-func loadItems() []Item {
-	items := []Item {
-		Item {
-			_id      : "1",
-			interval : 1 * time.Second,
-			enabled  : true,
-			active   : false,
-		},
-		Item {
-			_id      : "2",
-			interval : 3 * time.Second,
-			enabled  : true,
-			active   : false,
-		},
-	}
-
-	return items
-}
-
 // Trigger an item by making a call to the Trigger API.
 func trigger(_id string) {
 	url  := TriggerApiBaseURL + "/v" + TriggerApiVersion + "/"
@@ -137,6 +117,26 @@ func trigger(_id string) {
 		fmt.Println("Headers:" , res.Header)
 		fmt.Println("Body:"    , string(resBody))
 	}
+}
+
+// Temporary function that acts as a candidate items source.
+func loadItems() []Item {
+	items := []Item {
+		Item {
+			_id      : "1",
+			interval : 1 * time.Second,
+			enabled  : true,
+			active   : false,
+		},
+		Item {
+			_id      : "2",
+			interval : 3 * time.Second,
+			enabled  : true,
+			active   : false,
+		},
+	}
+
+	return items
 }
 
 type Item struct {
