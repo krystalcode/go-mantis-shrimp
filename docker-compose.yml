@@ -1,18 +1,20 @@
+# Docker Compose definition for easy development environment setup
+# @I Document nginx proxy requirement for docker-compose development environment
 version: '2'
 
 services:
 
-  # APIs.
-  engine:
+  # Where the main development happens.
+  development:
     # Build.
     build:
       context: ./docker
-      dockerfile: Dockerfile-engine
-    image: ms_engine
+      dockerfile: Dockerfile-go
+    image: ms_development
 
     # Run.
     command: sleep infinity
-    container_name: ms_engine
+    container_name: ms_development
 
     # Configure.
     environment:
@@ -20,6 +22,29 @@ services:
       - VIRTUAL_PORT=8888
       - VIRTUAL_NETWORK=nginx-proxy
 
+    links:
+      - elasticsearch
+      - trigger_api:ms-trigger-api
+
+    networks:
+      - proxy-tier
+
+    volumes:
+      - ../../../..:/go
+
+  # Service that runs the Trigger API. To be used when developing a consumer.
+  trigger_api:
+    # Build.
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-go
+    image: ms_trigger_api
+
+    # Run.
+    command: /go/bin/ms_trigger_api
+    container_name: ms_trigger_api
+
+    # Configure.
     links:
       - elasticsearch
 
