@@ -18,7 +18,7 @@ services:
 
     # Configure.
     environment:
-      - VIRTUAL_HOST=trigger.mantis-shrimp.localhost
+      - VIRTUAL_HOST=api.mantis-shrimp.localhost
       - VIRTUAL_PORT=8888
       - VIRTUAL_NETWORK=nginx-proxy
 
