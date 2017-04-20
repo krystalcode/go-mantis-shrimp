@@ -78,7 +78,7 @@ services:
       - proxy-tier
 
     volumes:
-      - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/ms/elasticsearch:/usr/share/elasticsearch/data
+      - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/go-mantis-shrimp/elasticsearch:/usr/share/elasticsearch/data
 
   # Development tools.
   kibana:
