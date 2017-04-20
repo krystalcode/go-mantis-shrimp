@@ -41,7 +41,7 @@ func v1Trigger(c *gin.Context) {
    * @I Ensure the caller has the permissions to trigger evaluation of an item
    * @I Trigger evaluation of the item
    * @I Find a better term than "item"
-   * @I Investigate whether we need our node response status codes
+   * @I Investigate whether we need our own response status codes
    */
 
 	// Return a Not Found response if there is no item with such _id.
