@@ -24,7 +24,9 @@ services:
 
     links:
       - elasticsearch
+      - redis
       - trigger_api:ms-trigger-api
+      - action_api:ms-action-api
 
     networks:
       - proxy-tier
@@ -47,6 +49,28 @@ services:
     # Configure.
     links:
       - elasticsearch
+
+    networks:
+      - proxy-tier
+
+    volumes:
+      - ../../../..:/go
+
+  # Service that runs the Action API. To be used when developing a consumer.
+  action_api:
+    # Build.
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-go
+    image: ms_action_api
+
+    # Run.
+    command: /go/bin/ms_action_api
+    container_name: ms_action_api
+
+    # Configure.
+    links:
+      - redis
 
     networks:
       - proxy-tier
@@ -79,6 +103,24 @@ services:
 
     volumes:
       - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/go-mantis-shrimp/elasticsearch:/usr/share/elasticsearch/data
+
+  redis:
+    # Build.
+    image: redis:alpine
+
+    # Run.
+    command: redis-server --appendonly yes
+
+    container_name: ms_redis
+
+    # Configure.
+    mem_limit: 268435456
+
+    networks:
+      - proxy-tier
+
+    volumes:
+      - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/go-mantis-shrimp/redis:/data
 
   # Development tools.
   kibana:
