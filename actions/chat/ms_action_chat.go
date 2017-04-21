@@ -29,16 +29,14 @@ type Action struct {
 	// Common fields for all actions.
 	common.ActionBase
 	// Webhook where the message will be posted. Provided by the chat application.
-	URL     string
+	URL     string `json:"url"`
 	// The message that will be posted.
-	Message Message
+	Message Message `json:"message"`
 }
 
 // Implements Action interface.
 // Executes the action by posting the message to the chat application.
 func (action Action) Do() {
-	url  := action.URL
-
 	// Convert the message to JSON.
 	body, err := json.Marshal(action.Message)
 	if err != nil {
@@ -46,7 +44,7 @@ func (action Action) Do() {
 	}
 
 	// Create and send the request.
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", action.URL, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -92,7 +90,7 @@ type Attachment struct {
 	AuthorIcon        *string  `json:"author_icon,omitempty"`
 	Title             *string  `json:"title,omitempty"`
 	TitleLink         *string  `json:"title_link,omitempty"`
-	TitleLinkDownload *string  `json:title_link_download,omitempty`
+	TitleLinkDownload *string  `json:"title_link_download,omitempty"`
 	ImageURL          *string  `json:"image_url,omitempty"`
 	AudioURL          *string  `json:"audio_url,omitempty"`
 	Fields            *[]Field `json:"fields,omitempty"`
