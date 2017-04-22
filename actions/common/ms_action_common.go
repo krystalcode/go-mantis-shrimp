@@ -10,6 +10,7 @@ type Action interface {
 // All actions should also be including the ActionBase as an embedded struct
 // (anonymous field). It provides all fields that should be present in all
 // action implementations.
+// @I Added CreatedAt and UpdatedAt fields in Actions
 type ActionBase struct {
 	Name string `json:"name"`
 }
