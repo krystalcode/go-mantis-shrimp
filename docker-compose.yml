@@ -122,6 +122,24 @@ services:
     volumes:
       - ${DOCKER_COMPOSE_VOLUMES_DIR}/src/go-mantis-shrimp/redis:/data
 
+  # Image for easily calling a redis cli via the following command:
+  # docker-compose run --rm redis_cli redis-cli -h redis -p 6379
+  redis_cli:
+    # Build.
+    image: redis:alpine
+
+    # Run.
+    command: exit
+
+    container_name: ms_redis_cli
+
+    # Configure.
+    links:
+      - redis
+
+    networks:
+      - proxy-tier
+
   # Development tools.
   kibana:
     # Build.
