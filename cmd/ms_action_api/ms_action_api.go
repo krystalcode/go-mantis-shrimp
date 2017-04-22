@@ -6,6 +6,7 @@ package main
 
 import (
 	// Utilities.
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -51,21 +52,53 @@ func main() {
 
 
 /**
- * Endpoint functions.
+ * Endpoint controllers.
  */
 
 // Create an Action based on the given parameters.
 func v1Create(c *gin.Context) {
+	// The parameters are provided as a JSON object in the request. Bind it to an
+	// object of the corresponding type.
+	var JSONBody requestJSON_Create
+	err := c.BindJSON(&JSONBody)
+	if err != nil {
+		panic(err)
+	}
+	if JSONBody.Type == "" || len(JSONBody.Action) == 0 {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H {
+				"status" : http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	// Get the Action as an object of the appropriate type.
+	action := JSONBody.actionByType()
+	err = json.Unmarshal(JSONBody.Action, &action)
+	if err != nil {
+		panic(err)
+	}
+	if action == nil {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H {
+				"status" : http.StatusBadRequest,
+			},
+		)
+		return
+	}
+
+	// Store the Action.
 	storage := c.MustGet("storage").(storage.Storage)
-	// Get a mock action until we implement constructing one from the parameters.
-	action := getActionById("mock-id")
 	_id := storage.Set(action)
 
 	/**
    * @I Implement authentication of the caller
-   * @I Accept and validate parameters per action type
+   * @I Validate parameters per action type
    * @I Ensure the caller has the permissions to create actions
-   * @I Check if we'd rather send a 500 response in case of errors
+   * @I Log errors and send a 500 response instead of panicking
    */
 
 	// All good.
@@ -155,31 +188,26 @@ func Storage(config map[string]string) gin.HandlerFunc {
 	}
 }
 
-// Stub function for getting an action by its _id until we implement storage.
-func getActionById(_id string) common.Action {
-	text := "There is an update available for the chat."
-	alias := "mantis-shrimp"
-	emoji := ":smirk:"
-	aTs := "2016-12-09T16:53:06.761Z"
-	aText := "An attachment to the message"
-	aAuthorName := "Mantis Shrimp"
-	aAuthorLink := "https://github.com/krystalcode/go-mantis-shrimp"
-	attachment := chat.Attachment {
-		Ts : &aTs,
-		Text : &aText,
-		AuthorName : &aAuthorName,
-		AuthorLink : &aAuthorLink,
+
+/**
+ * Endpoint helper types/functions.
+ */
+
+// Struct for holding the request data for the Create endpoint.
+type requestJSON_Create struct {
+	Type   string `json="type"`
+	Action json.RawMessage `json="action"`
+}
+
+// Get the right Action type based on the "type" parameter included in the
+// request, so that we can properly convert the JSON parameters into an Action
+// object.
+func (requestData requestJSON_Create) actionByType() common.Action {
+	switch requestData.Type {
+	case "chat_message":
+		var action chat.Action
+		return &action
 	}
-	attachments := []chat.Attachment {attachment}
-	action := chat.Action {
-		common.ActionBase { "1" },
-		"http://chat:3000/hooks/kFQCMu8tSGfCQw9i4/YpzBK9Y3eDHCDBf4wABKTwNjkd7hrLtGofPNGXzYJjuX3rKq",
-		chat.Message {
-			Text : &text,
-			Alias : &alias,
-			Emoji : &emoji,
-			Attachments : &attachments,
-		},
-	}
-	return action
+
+	return nil
 }
