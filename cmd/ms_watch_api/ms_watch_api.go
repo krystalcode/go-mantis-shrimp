@@ -32,20 +32,19 @@ func main() {
  */
 func v1Trigger(c *gin.Context) {
 	_id  := c.PostForm("_id")
-	item := getItemById(_id)
+	watch := getWatchById(_id)
 
 	/**
    * @I Implement authentication of the caller
    * @I Does the _id need any escaping?
    * @I Retrieve the record from the database
-   * @I Ensure the caller has the permissions to trigger evaluation of an item
-   * @I Trigger evaluation of the item
-   * @I Find a better term than "item"
+   * @I Ensure the caller has the permissions to trigger evaluation of a Watch
+   * @I Trigger evaluation of the Watch
    * @I Investigate whether we need our own response status codes
    */
 
-	// Return a Not Found response if there is no item with such _id.
-	if item == nil {
+	// Return a Not Found response if there is no Watch with such _id.
+	if watch == nil {
 		c.JSON(
 			http.StatusNotFound,
 			gin.H {
@@ -64,15 +63,15 @@ func v1Trigger(c *gin.Context) {
 	)
 }
 
-// Stub function for getting an item by its _id until we implement item storage.
-func getItemById(_id string) *Item {
-	var item = Item{
+// Stub function for getting a Watch by its _id until we implement Watch storage.
+func getWatchById(_id string) *Watch {
+	var watch = Watch{
 		_id: _id,
 	}
-	return &item
+	return &watch
 }
 
-// Stub model items until we design the item structure.
-type Item struct {
+// Stub model for Watches until we design the Watch structure.
+type Watch struct {
 	_id string
 }
