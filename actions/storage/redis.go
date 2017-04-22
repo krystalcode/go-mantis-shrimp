@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	// Redis.
   "github.com/mediocregopher/radix.v2/redis"
@@ -29,14 +30,25 @@ type Redis struct {
 }
 
 // Get an Action by its ID.
-func (storage Redis) Get(_id string) common.Action {
+func (storage Redis) Get(_id int) common.Action {
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
 	}
 
-	jsonAction, err := storage.client.Cmd("GET", _id).Bytes()
+	key := redisKey(_id)
+
+	r := storage.client.Cmd("GET", key)
+	if r.Err != nil {
+		panic(r.Err)
+	}
+
+	jsonAction, err := r.Bytes()
+	// If an error happens here, it should be because there is no value for this
+	// key. It could be the case that the data is corrupted or the wrong data is
+	// stored, we should see how to handle this later.
+	// @I Handle edge cases when deserializing json in Redis
 	if err != nil {
-		panic(err)
+		return nil
 	}
 
 	// @I Dynamically detect the Action type and convert json to struct
@@ -48,8 +60,8 @@ func (storage Redis) Get(_id string) common.Action {
 }
 
 // Set an Action.
-// @I Consider automatically generate the ID and return it
-func (storage Redis) Set(action common.Action) {
+// @I Consider using hashmaps instead of json values
+func (storage Redis) Set(action common.Action) int {
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
 	}
@@ -59,10 +71,40 @@ func (storage Redis) Set(action common.Action) {
 		panic(err)
 	}
 
-	err = storage.client.Cmd("SET", action.GetName(), jsonAction).Err
+	// Generate an ID, store the Action, and update the Actions index set.
+	_id := storage.generateID()
+	key := redisKey(_id)
+	err = storage.client.Cmd("SET", key, jsonAction).Err
 	if err != nil {
 		panic(err)
 	}
+	err = storage.client.Cmd("ZADD", "actions", _id, key).Err
+	if err != nil {
+		panic(err)
+	}
+
+	return _id
+}
+
+func (storage Redis) generateID() int {
+	// Get the last ID that exists on the Actions index set, so that we can generate
+	// the next one.
+	r, err := storage.client.Cmd("ZREVRANGE", "actions", 0, 0, "WITHSCORES").List()
+	if err != nil {
+		panic(err)
+	}
+
+	// If there are no actions yet, start with ID 1.
+	if len(r) == 0 {
+		return 1
+	}
+
+	_id, err := strconv.Atoi(r[1])
+	if err != nil {
+		panic(err)
+	}
+
+	return _id + 1
 }
 
 // Implements the StorageFactory interface.
@@ -92,4 +134,13 @@ func NewRedisStorage(config map[string]string) (Storage, error) {
 	}
 
 	return storage, nil
+}
+
+/**
+ * For internal use.
+ */
+
+// Generate a Redis key for the given Action ID.
+func redisKey(_id int) string {
+	return "action:" + string(_id)
 }

@@ -21,8 +21,8 @@ import (
 // Storage interfaces that should be implemented by all providers.
 
 type Storage interface {
-	Get(string) common.Action
-	Set(common.Action)
+	Get(int)           common.Action
+	Set(common.Action) int
 }
 
 type StorageFactory func(confing map[string]string) (Storage, error)
