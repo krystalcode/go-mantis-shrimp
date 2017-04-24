@@ -12,8 +12,8 @@ The name is probably going to change as the scope and architecture of the projec
 
 ## Architecture
 Even though the architecture is still a subject for debate, we aim to create an extensible and scalable microservices architecture. Currently the following components exist:
-* Trigger API: for triggering evaluation of a watch.
-* Trigger Scheduler: plugin for triggering evaluation of a watch (via Trigger API) in regular intervals
+* Watch API: for managing watches and triggering their evaluation.
+* Watch Scheduler: plugin for triggering evaluation of a watch (via Watch API) in regular intervals
 * Action API: for triggering an action
 * Action Chat Message: plugin for sending a message to a chat application e.g. Rocket Chat, Slack, HipChat etc.
 
