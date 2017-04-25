@@ -55,7 +55,7 @@ func (watch Watch) Do() {
 }
 
 // Makes a GET call to the URL defined in the Watch and determines the Result.
-func (watch Watch) data() {
+func (watch *Watch) data() {
 	client := http.Client {
 		Timeout : watch.Timeout,
 	}
@@ -98,7 +98,7 @@ func (watch Watch) data() {
 // @I Support Condition operators in Watches that would allow combining
 //    Conditions in flexible ways
 // @I Consider abstracting the Watch.evalute() function so that it is reusable
-func (watch Watch) evaluate() bool {
+func (watch *Watch) evaluate() bool {
 	allOk := true
 	for _, condition := range watch.Conditions {
 		ok := condition.Do(watch.result)
