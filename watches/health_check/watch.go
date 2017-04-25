@@ -168,27 +168,42 @@ func (watch *Watch) UnmarshalJSON(bytes []byte) error {
 	//    having to manually decode the rest of a struct's fields
 	if jsonMap["name"] != nil {
 		var name string
-		json.Unmarshal(*jsonMap["name"], &name)
+		err = json.Unmarshal(*jsonMap["name"], &name)
+		if err != nil {
+			return err
+		}
 		watch.Name = name
 	}
 	if jsonMap["actions_ids"] != nil {
 		var actionsIds []int
-		json.Unmarshal(*jsonMap["actions_ids"], &actionsIds)
+		err = json.Unmarshal(*jsonMap["actions_ids"], &actionsIds)
+		if err != nil {
+			return err
+		}
 		watch.ActionsIds = actionsIds
 	}
 	if jsonMap["url"] != nil {
 		var URL string
-		json.Unmarshal(*jsonMap["url"], &URL)
+		err = json.Unmarshal(*jsonMap["url"], &URL)
+		if err != nil {
+			return err
+		}
 		watch.URL = URL
 	}
 	if jsonMap["statuses"] != nil {
 		var statuses []int
-		json.Unmarshal(*jsonMap["statuses"], &statuses)
+		err = json.Unmarshal(*jsonMap["statuses"], &statuses)
+		if err != nil {
+			return err
+		}
 		watch.Statuses = statuses
 	}
 	if jsonMap["timeout"] != nil {
 		var timeout time.Duration
-		json.Unmarshal(*jsonMap["timeout"], &timeout)
+		err = json.Unmarshal(*jsonMap["timeout"], &timeout)
+		if err != nil {
+			return err
+		}
 		watch.Timeout = timeout
 	}
 
