@@ -144,5 +144,5 @@ func NewRedisStorage(config map[string]string) (Storage, error) {
 
 // Generate a Redis key for the given Watch ID.
 func redisKey(_id int) string {
-	return "watch:" + string(_id)
+	return "watch:" + strconv.Itoa(_id)
 }
