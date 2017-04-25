@@ -142,5 +142,5 @@ func NewRedisStorage(config map[string]string) (Storage, error) {
 
 // Generate a Redis key for the given Action ID.
 func redisKey(_id int) string {
-	return "action:" + string(_id)
+	return "action:" + strconv.Itoa(_id)
 }
