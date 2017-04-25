@@ -115,9 +115,7 @@ func v1Create(c *gin.Context) {
 /**
  * @I Implement authentication of the caller
  * @I Does the _id need any escaping?
- * @I Retrieve the record from the database
  * @I Ensure the caller has the permissions to trigger actions
- * @I Trigger actions
  * @I Consider allowing the caller to pass on the actions as well for being
  *    able to avoid the extra database call
  * @I Investigate whether we need our own response status codes
