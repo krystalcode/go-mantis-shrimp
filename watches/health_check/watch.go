@@ -152,6 +152,14 @@ func (condition ConditionFailure) Do(result Result) bool {
  * JSON.
  */
 
+func (condition ConditionSuccess) MarshalJSON() ([]byte, error) {
+	return []byte(`{"type":"success"}`), nil
+}
+
+func (condition ConditionFailure) MarshalJSON() ([]byte, error) {
+	return []byte(`{"type":"failure"}`), nil
+}
+
 // We need some special handling for decoding JSON since the Conditions can be
 // of different types.
 func (watch *Watch) UnmarshalJSON(bytes []byte) error {
