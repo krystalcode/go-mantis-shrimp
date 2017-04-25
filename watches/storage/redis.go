@@ -15,8 +15,8 @@ import (
   "github.com/mediocregopher/radix.v2/redis"
 
 	// Internal dependencies.
-	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
-	health "github.com/krystalcode/go-mantis-shrimp/watches/health_check"
+	common  "github.com/krystalcode/go-mantis-shrimp/watches/common"
+	wrapper "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
 )
 
 /**
@@ -51,12 +51,11 @@ func (storage Redis) Get(_id int) common.Watch {
 		return nil
 	}
 
-	// @I Dynamically detect the Watch type and convert json to struct
-	//    accordingly
-	watch := health.Watch{}
-	json.Unmarshal(jsonWatch, &watch)
+	// We store the Watches as WatchWrappers that contain the Watch type as well.
+	var wrapper wrapper.WatchWrapper
+	json.Unmarshal(jsonWatch, &wrapper)
 
-	return watch
+	return wrapper.Watch
 }
 
 // Set an Watch.
@@ -68,7 +67,12 @@ func (storage Redis) Set(watch common.Watch) int {
 		panic("The Redis client has not been initialized yet.")
 	}
 
-	jsonWatch, err := json.Marshal(watch)
+	// We'll be storing a WatchWrapper which contains the Watch type as well.
+	wrapper, err := wrapper.Wrapper(watch)
+	if err != nil {
+		panic(err)
+	}
+	jsonWatch, err := json.Marshal(wrapper)
 	if err != nil {
 		panic(err)
 	}
