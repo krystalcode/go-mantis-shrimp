@@ -61,6 +61,8 @@ func (storage Redis) Get(_id int) common.Action {
 
 // Set an Action.
 // @I Consider using hashmaps instead of json values
+// @I Investigate risk of an Action overriding another due to race conditions
+//    when creating them
 func (storage Redis) Set(action common.Action) int {
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
