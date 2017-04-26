@@ -13,7 +13,6 @@ import (
 	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
 )
 
-
 /**
  * Public API.
  */
@@ -21,7 +20,7 @@ import (
 // Storage interfaces that should be implemented by all providers.
 
 type Storage interface {
-	Get(int)          common.Watch
+	Get(int) common.Watch
 	Set(common.Watch) int
 }
 
@@ -50,7 +49,6 @@ func Create(config map[string]string) (Storage, error) {
 
 	return factory(config)
 }
-
 
 /**
  * For internal use.

@@ -6,15 +6,15 @@ package msWatchHealthCheck
 
 import (
 	// Testing packages.
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	// Utilities.
 	"time"
 
 	// Internal dependencies.
-	common  "github.com/krystalcode/go-mantis-shrimp/watches/common"
 	actions "github.com/krystalcode/go-mantis-shrimp/actions/common"
+	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
 )
 
 func testWatch() Watch {
@@ -25,7 +25,7 @@ func testWatch() Watch {
 			[]actions.Action{},
 		},
 		"https://golang.org/pkg/testing/",
-		[]int{ 200 },
+		[]int{200},
 		30 * time.Second,
 		[]Condition{},
 		Result{},
@@ -41,8 +41,8 @@ func testWatch() Watch {
 func TestEvaluateConditionsOnSuccess_Success(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionSuccess{}
-	watch.result = Result{ "success" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"success"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.True(t, ok)
@@ -51,8 +51,8 @@ func TestEvaluateConditionsOnSuccess_Success(t *testing.T) {
 func TestEvaluateConditionsOnSuccess_Failure(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionFailure{}
-	watch.result = Result{ "success" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"success"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.False(t, ok)
@@ -61,8 +61,8 @@ func TestEvaluateConditionsOnSuccess_Failure(t *testing.T) {
 func TestEvaluateConditionsOnFailure_Success(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionSuccess{}
-	watch.result = Result{ "failure" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"failure"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.False(t, ok)
@@ -71,8 +71,8 @@ func TestEvaluateConditionsOnFailure_Success(t *testing.T) {
 func TestEvaluateConditionsOnFailure_Failure(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionFailure{}
-	watch.result = Result{ "failure" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"failure"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.True(t, ok)
@@ -81,8 +81,8 @@ func TestEvaluateConditionsOnFailure_Failure(t *testing.T) {
 func TestEvaluateConditionsOnInaccessible_Success(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionSuccess{}
-	watch.result = Result{ "Inaccessible" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"Inaccessible"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.False(t, ok)
@@ -91,8 +91,8 @@ func TestEvaluateConditionsOnInaccessible_Success(t *testing.T) {
 func TestEvaluateConditionsOnInaccessible_Failure(t *testing.T) {
 	watch := testWatch()
 	condition := ConditionFailure{}
-	watch.result = Result{ "Inaccessible" }
-	watch.Conditions = []Condition{ condition }
+	watch.result = Result{"Inaccessible"}
+	watch.Conditions = []Condition{condition}
 
 	ok := watch.evaluate()
 	assert.True(t, ok)

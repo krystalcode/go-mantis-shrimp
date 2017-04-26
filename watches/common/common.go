@@ -18,7 +18,7 @@ type Watch interface {
 // Watch implementations.
 // @I Add CreatedAt and UpdatedAt fields in Watches
 type WatchBase struct {
-	Name         string         `json:"name"`
+	Name       string           `json:"name"`
 	ActionsIds []int            `json:"actions_ids"`
 	Actions    []actions.Action `json:"actions"`
 }

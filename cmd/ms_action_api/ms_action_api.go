@@ -14,11 +14,10 @@ import (
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
+	chat "github.com/krystalcode/go-mantis-shrimp/actions/chat"
 	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
-	chat   "github.com/krystalcode/go-mantis-shrimp/actions/chat"
 	storage "github.com/krystalcode/go-mantis-shrimp/actions/storage"
 )
-
 
 /**
  * Main program entry.
@@ -29,7 +28,7 @@ func main() {
 	// Make storage available to the controllers.
 	// @I Load storage configuration from file or cli options
 	config := map[string]string{
-		"STORAGE_ENGINE": "redis",
+		"STORAGE_ENGINE":    "redis",
 		"STORAGE_REDIS_DSN": "redis:6379",
 	}
 	router.Use(Storage(config))
@@ -45,11 +44,10 @@ func main() {
 	}
 
 	/**
-   * @I Make the Action API port configurable
-   */
+	 * @I Make the Action API port configurable
+	 */
 	router.Run(":8888")
 }
-
 
 /**
  * Endpoint controllers.
@@ -67,8 +65,8 @@ func v1Create(c *gin.Context) {
 	if JSONBody.Type == "" || len(JSONBody.Action) == 0 {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H {
-				"status" : http.StatusBadRequest,
+			gin.H{
+				"status": http.StatusBadRequest,
 			},
 		)
 		return
@@ -83,8 +81,8 @@ func v1Create(c *gin.Context) {
 	if action == nil {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H {
-				"status" : http.StatusBadRequest,
+			gin.H{
+				"status": http.StatusBadRequest,
 			},
 		)
 		return
@@ -95,18 +93,18 @@ func v1Create(c *gin.Context) {
 	_id := storage.Set(action)
 
 	/**
-   * @I Implement authentication of the caller
-   * @I Validate parameters per action type
-   * @I Ensure the caller has the permissions to create actions
-   * @I Log errors and send a 500 response instead of panicking
-   */
+	 * @I Implement authentication of the caller
+	 * @I Validate parameters per action type
+	 * @I Ensure the caller has the permissions to create actions
+	 * @I Log errors and send a 500 response instead of panicking
+	 */
 
 	// All good.
 	c.JSON(
 		http.StatusOK,
-		gin.H {
-			"status" : http.StatusOK,
-			"_id"    : _id,
+		gin.H{
+			"status": http.StatusOK,
+			"_id":    _id,
 		},
 	)
 }
@@ -127,8 +125,8 @@ func v1Trigger(c *gin.Context) {
 	if _idString == "" {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H {
-				"status" : http.StatusBadRequest,
+			gin.H{
+				"status": http.StatusBadRequest,
 			},
 		)
 		return
@@ -148,8 +146,8 @@ func v1Trigger(c *gin.Context) {
 	if action == nil {
 		c.JSON(
 			http.StatusNotFound,
-			gin.H {
-				"status" : http.StatusNotFound,
+			gin.H{
+				"status": http.StatusNotFound,
 			},
 		)
 		return
@@ -163,12 +161,11 @@ func v1Trigger(c *gin.Context) {
 	// All good.
 	c.JSON(
 		http.StatusOK,
-		gin.H {
-			"status" : http.StatusOK,
+		gin.H{
+			"status": http.StatusOK,
 		},
 	)
 }
-
 
 /**
  * Middleware.
@@ -186,14 +183,13 @@ func Storage(config map[string]string) gin.HandlerFunc {
 	}
 }
 
-
 /**
  * Endpoint helper types/functions.
  */
 
 // Struct for holding the request data for the Create endpoint.
 type requestJSON_Create struct {
-	Type   string `json="type"`
+	Type   string          `json="type"`
 	Action json.RawMessage `json="action"`
 }
 

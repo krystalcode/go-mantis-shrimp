@@ -17,7 +17,6 @@ import (
 	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
 )
 
-
 /**
  * Types and their functions.
  */
@@ -33,7 +32,7 @@ type Watch struct {
 	Timeout time.Duration `json:"timeout"`
 	// The Conditions that will evaluate the results to determine whether the
 	// Actions should be triggered or not.
-	Conditions  []Condition `json:"conditions"`
+	Conditions []Condition `json:"conditions"`
 
 	// The result of the data operation.
 	result Result
@@ -56,14 +55,14 @@ func (watch Watch) Do() []int {
 
 // Makes a GET call to the URL defined in the Watch and determines the Result.
 func (watch *Watch) data() {
-	client := http.Client {
-		Timeout : watch.Timeout,
+	client := http.Client{
+		Timeout: watch.Timeout,
 	}
 	res, err := client.Get(watch.URL)
 	if err != nil {
 		// @I Differentiate between lack of accessibility and timeout in health
 		//    check watch
-		watch.result = Result { Status : "inaccessible" }
+		watch.result = Result{Status: "inaccessible"}
 		return
 	}
 
@@ -83,13 +82,13 @@ func (watch *Watch) data() {
 	}
 
 	if !statusMatch {
-		watch.result = Result { Status : "status_mismatch"}
+		watch.result = Result{Status: "status_mismatch"}
 		return
 	}
 
 	// If we got a response with one of the successful statuses, the result is
 	// "success".
-	watch.result = Result { Status : "success" }
+	watch.result = Result{Status: "success"}
 }
 
 // Go through all Conditions defined in the Watch and evaluate them. The
@@ -129,7 +128,8 @@ type Condition interface {
 }
 
 // Condition that succeeds when the health check is successful.
-type ConditionSuccess struct {}
+type ConditionSuccess struct{}
+
 func (condition ConditionSuccess) Do(result Result) bool {
 	if result.Status == "success" {
 		return true
@@ -139,7 +139,8 @@ func (condition ConditionSuccess) Do(result Result) bool {
 }
 
 // Condition that succeeds when the health check has failed for whatever reason.
-type ConditionFailure struct {}
+type ConditionFailure struct{}
+
 func (condition ConditionFailure) Do(result Result) bool {
 	if result.Status != "success" {
 		return true

@@ -24,7 +24,7 @@ type Config struct {
 func TriggerById(_id int, config Config) error {
 	// Prepare the URL and the request body.
 	idString := strconv.Itoa(_id)
-	url  := config.BaseURL + "/v" + config.Version + "/" + idString + "/trigger"
+	url := config.BaseURL + "/v" + config.Version + "/" + idString + "/trigger"
 	body := []byte{}
 
 	// Make the request.

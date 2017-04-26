@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 /**
  * Constants.
  */
@@ -18,7 +17,6 @@ import (
 // @I Make the Watch API base url configurable
 const WatchApiBaseURL = "http://ms-watch-api:8888"
 const WatchApiVersion = "1"
-
 
 /**
  * Main program entry.
@@ -73,7 +71,7 @@ func search(watches chan<- Watch) {
 func filter(watch Watch, triggers chan<- Watch) {
 	now := time.Now()
 	afterStart := watch.start == nil || now.After(*watch.start)
-	beforeEnd  := watch.end   == nil || now.Before(*watch.end)
+	beforeEnd := watch.end == nil || now.Before(*watch.end)
 	if afterStart && beforeEnd {
 		run(watch, triggers)
 
@@ -92,7 +90,7 @@ func run(watch Watch, triggers chan<- Watch) {
 
 // Trigger an Watch by making a call to the Trigger API.
 func trigger(_id string) {
-	url  := WatchApiBaseURL + "/v" + WatchApiVersion + "/"
+	url := WatchApiBaseURL + "/v" + WatchApiVersion + "/"
 	body := []byte("{\"_id\":\"" + _id + "\"}")
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -113,26 +111,26 @@ func trigger(_id string) {
 
 	if resStatus != http.StatusOK {
 		resBody, _ := ioutil.ReadAll(res.Body)
-		fmt.Println("Status:"  , res.Status)
-		fmt.Println("Headers:" , res.Header)
-		fmt.Println("Body:"    , string(resBody))
+		fmt.Println("Status:", res.Status)
+		fmt.Println("Headers:", res.Header)
+		fmt.Println("Body:", string(resBody))
 	}
 }
 
 // Temporary function that acts as a candidate Watches source.
 func loadWatches() []Watch {
-	watches := []Watch {
-		Watch {
-			_id      : "1",
-			interval : 1 * time.Second,
-			enabled  : true,
-			active   : false,
+	watches := []Watch{
+		Watch{
+			_id:      "1",
+			interval: 1 * time.Second,
+			enabled:  true,
+			active:   false,
 		},
-		Watch {
-			_id      : "2",
-			interval : 3 * time.Second,
-			enabled  : true,
-			active   : false,
+		Watch{
+			_id:      "2",
+			interval: 3 * time.Second,
+			enabled:  true,
+			active:   false,
 		},
 	}
 
@@ -141,15 +139,15 @@ func loadWatches() []Watch {
 
 type Watch struct {
 	// Unique Watch identifier.
-	_id      string
+	_id string
 	// The Watch should be triggered only between its start and end times.
-	start    *time.Time
-	end      *time.Time
+	start *time.Time
+	end   *time.Time
 	// How frequently the Watch should be triggered.
 	interval time.Duration
 	// Watches should not be triggered if they are disabled.
-	enabled  bool
+	enabled bool
 	// Whether the Watch is active in the scheduler queue. It can be used to
 	// prevent loading and triggering the same candidate Watch more than once.
-	active   bool
+	active bool
 }

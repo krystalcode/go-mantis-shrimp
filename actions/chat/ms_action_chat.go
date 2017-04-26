@@ -10,8 +10,8 @@ package msActionChat
 import (
 	// Utilities.
 	"bytes"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -29,7 +29,7 @@ type Action struct {
 	// Common fields for all actions.
 	common.ActionBase
 	// Webhook where the message will be posted. Provided by the chat application.
-	URL     string `json:"url"`
+	URL string `json:"url"`
 	// The message that will be posted.
 	Message Message `json:"message"`
 }
@@ -62,19 +62,19 @@ func (action Action) Do() {
 
 	if resStatus != http.StatusOK {
 		resBody, _ := ioutil.ReadAll(res.Body)
-		fmt.Println("Status:"  , res.Status)
-		fmt.Println("Headers:" , res.Header)
-		fmt.Println("Body:"    , string(resBody))
+		fmt.Println("Status:", res.Status)
+		fmt.Println("Headers:", res.Header)
+		fmt.Println("Body:", string(resBody))
 	}
 }
 
 // Holds a message. Implements the structure required by Rocket Chat
 // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
 type Message struct {
-	Text        *string `json:"text,omitempty"`
-	Alias       *string `json:"alias,omitempty"`
-	Emoji       *string `json:"emoji,omitempty"`
-	Avatar      *string `json:"avatar,omitempty"`
+	Text        *string       `json:"text,omitempty"`
+	Alias       *string       `json:"alias,omitempty"`
+	Emoji       *string       `json:"emoji,omitempty"`
+	Avatar      *string       `json:"avatar,omitempty"`
 	Attachments *[]Attachment `json:"attachments,omitempty"`
 }
 

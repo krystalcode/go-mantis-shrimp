@@ -10,11 +10,10 @@ import (
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
-	wrapper  "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
-	storage  "github.com/krystalcode/go-mantis-shrimp/watches/storage"
-	sdk      "github.com/krystalcode/go-mantis-shrimp/actions/sdk"
+	sdk "github.com/krystalcode/go-mantis-shrimp/actions/sdk"
+	storage "github.com/krystalcode/go-mantis-shrimp/watches/storage"
+	wrapper "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
 )
-
 
 /**
  * Constants.
@@ -23,7 +22,6 @@ import (
 // @I Make the Action API base url configurable
 const ActionApiBaseURL = "http://ms-action-api:8888"
 const ActionApiVersion = "1"
-
 
 /**
  * Main program entry.
@@ -34,7 +32,7 @@ func main() {
 	// Make storage available to the controllers.
 	// @I Load storage configuration from file or cli options
 	config := map[string]string{
-		"STORAGE_ENGINE": "redis",
+		"STORAGE_ENGINE":    "redis",
 		"STORAGE_REDIS_DSN": "redis:6379",
 	}
 	router.Use(Storage(config))
@@ -50,11 +48,10 @@ func main() {
 	}
 
 	/**
-   * @I Make the trigger API port configurable
-   */
+	 * @I Make the trigger API port configurable
+	 */
 	router.Run(":8888")
 }
-
 
 /**
  * Endpoint functions.
@@ -80,8 +77,8 @@ func v1Create(c *gin.Context) {
 	if wrapper.Watch == nil {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H {
-				"status" : http.StatusBadRequest,
+			gin.H{
+				"status": http.StatusBadRequest,
 			},
 		)
 		return
@@ -98,9 +95,9 @@ func v1Create(c *gin.Context) {
 	// All good.
 	c.JSON(
 		http.StatusOK,
-		gin.H {
-			"status" : http.StatusOK,
-			"_id"    : _id,
+		gin.H{
+			"status": http.StatusOK,
+			"_id":    _id,
 		},
 	)
 }
@@ -119,8 +116,8 @@ func v1Trigger(c *gin.Context) {
 	if _idString == "" {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H {
-				"status" : http.StatusBadRequest,
+			gin.H{
+				"status": http.StatusBadRequest,
 			},
 		)
 		return
@@ -140,8 +137,8 @@ func v1Trigger(c *gin.Context) {
 	if watch == nil {
 		c.JSON(
 			http.StatusNotFound,
-			gin.H {
-				"status" : http.StatusNotFound,
+			gin.H{
+				"status": http.StatusNotFound,
 			},
 		)
 		return
@@ -157,8 +154,8 @@ func v1Trigger(c *gin.Context) {
 		}
 
 		sdkConfig := sdk.Config{
-			BaseURL : ActionApiBaseURL,
-			Version : ActionApiVersion,
+			BaseURL: ActionApiBaseURL,
+			Version: ActionApiVersion,
 		}
 		// @I Trigger all Watch Actions in one request
 		for _, actionId := range actionsIds {
@@ -175,12 +172,11 @@ func v1Trigger(c *gin.Context) {
 	// All good.
 	c.JSON(
 		http.StatusOK,
-		gin.H {
-			"status" : http.StatusOK,
+		gin.H{
+			"status": http.StatusOK,
 		},
 	)
 }
-
 
 /**
  * Middleware.

@@ -12,10 +12,10 @@ import (
 	"strconv"
 
 	// Redis.
-  "github.com/mediocregopher/radix.v2/redis"
+	"github.com/mediocregopher/radix.v2/redis"
 
 	// Internal dependencies.
-	common  "github.com/krystalcode/go-mantis-shrimp/watches/common"
+	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
 )
 
@@ -25,7 +25,7 @@ import (
 
 // Implements the Storage interface.
 type Redis struct {
-	dsn     string
+	dsn    string
 	client *redis.Client
 }
 
@@ -134,9 +134,9 @@ func NewRedisStorage(config map[string]string) (Storage, error) {
 		return nil, err
 	}
 
-	storage := Redis {
-		dsn    : dsn,
-		client : client,
+	storage := Redis{
+		dsn:    dsn,
+		client: client,
 	}
 
 	return storage, nil

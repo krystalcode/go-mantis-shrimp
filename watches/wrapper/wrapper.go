@@ -18,14 +18,14 @@ import (
 	"reflect"
 
 	// Internal dependencies.
-	common  "github.com/krystalcode/go-mantis-shrimp/watches/common"
-	health  "github.com/krystalcode/go-mantis-shrimp/watches/health_check"
+	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
+	health "github.com/krystalcode/go-mantis-shrimp/watches/health_check"
 )
 
 // Wrapper structure that holds the type of the Watch as well.
 type WatchWrapper struct {
-	Type  string        `json:"type"`
-	Watch common.Watch  `json:"watch"`
+	Type  string       `json:"type"`
+	Watch common.Watch `json:"watch"`
 }
 
 // Properly decode a Wrapper JSON object and the contained Watch depending on
@@ -100,8 +100,8 @@ func Wrapper(watch common.Watch) (*WatchWrapper, error) {
 	}
 
 	wrapper := WatchWrapper{
-		Type  : watchType,
-		Watch : watch,
+		Type:  watchType,
+		Watch: watch,
 	}
 	return &wrapper, nil
 }
