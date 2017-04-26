@@ -59,7 +59,7 @@ func (watch Watch) Do() []int {
 
 // Makes a GET call to the URL defined in the Watch and determines the Result.
 func (watch *Watch) data() {
-	client := http.Client{
+	client := &http.Client{
 		Timeout: watch.Timeout,
 	}
 	res, err := client.Get(watch.URL)
