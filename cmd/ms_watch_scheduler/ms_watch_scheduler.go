@@ -129,13 +129,13 @@ func trigger(_id string) {
 // It will be removed once we implement Storage.
 func loadWatches() []Watch {
 	watches := []Watch{
-		Watch{
+		{
 			_id:      "1",
 			interval: 1 * time.Second,
 			enabled:  true,
 			active:   false,
 		},
-		Watch{
+		{
 			_id:      "2",
 			interval: 3 * time.Second,
 			enabled:  true,
