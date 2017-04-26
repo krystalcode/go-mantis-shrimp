@@ -7,9 +7,10 @@ import (
 
 // All Watches should be implementing this interface.
 // It simply defines a Do() function that prepares any data and evaluates any
-// conditions.
+// conditions. It returns a list of the IDs of the Actions that should be
+// triggered as a result of the Watch, if any.
 type Watch interface {
-	Do()
+	Do() []int
 }
 
 // All Watches should also be including the WatchBase as an embedded struct

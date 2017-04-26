@@ -40,18 +40,18 @@ type Watch struct {
 }
 
 // Implements common.Watch.Do().
-func (watch Watch) Do() {
+func (watch Watch) Do() []int {
 	watch.data()
 	ok := watch.evaluate()
 
 	if !ok {
-		return
+		return []int{}
 	}
 
-	// If all conditions pass, trigger the Actions.
-	// @I Implement triggering Actions when evaluating a Watch's conditions
-	// succeeds.
-	fmt.Println("All conditions pass, the Actions should be triggered now.")
+	// If all conditions pass, return the IDs of the Actions that should be
+	// triggered.
+	// Store any Actions given in the Actions field and return their IDs as well.
+	return watch.ActionsIds
 }
 
 // Makes a GET call to the URL defined in the Watch and determines the Result.
