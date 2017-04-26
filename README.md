@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/krystalcode/go-mantis-shrimp.svg?branch=master)](https://travis-ci.org/krystalcode/go-mantis-shrimp)
+
 # Mantis Shrimp
 An open source and more generic alternative to the Elastic X-Pack Alerting written in Golang.
 
