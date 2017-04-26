@@ -5,4 +5,4 @@ go:
   - tip
 
 script:
-  - go test -v -covermode=count -coverprofile=coverage.out
+  - go test github.com/krystalcode/go-mantis-shrimp/watches/health_check -v -covermode=count -coverprofile=coverage.out
