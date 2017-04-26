@@ -117,7 +117,7 @@ func (storage Redis) generateID() int {
 // NewRedisStorage implements the StorageFactory function type. It initiates a
 // connection to the Redis database defined in the given configuration, and it
 // returns the Storage engine object.
-func NewRedisStorage(config map[string]string) (Storage, error) {
+var NewRedisStorage = func(config map[string]string) (Storage, error) {
 	dsn, ok := config["STORAGE_REDIS_DSN"]
 	if !ok {
 		err := fmt.Errorf(
