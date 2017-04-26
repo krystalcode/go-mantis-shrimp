@@ -102,6 +102,7 @@ func (watch *Watch) evaluate() bool {
 	// @I Support Condition operators in Watches that would allow combining
 	//    Conditions in flexible ways
 	// @I Consider abstracting the Watch.evalute() function so that it is reusable
+	// @I Consider using Goroutines to evaluate multiple Conditions in a Watch
 
 	allOk := true
 	for _, condition := range watch.Conditions {
