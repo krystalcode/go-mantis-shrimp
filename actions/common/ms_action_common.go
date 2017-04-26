@@ -5,7 +5,6 @@ package msActionCommon
 // do.
 type Action interface {
 	Do()
-	GetName() string
 }
 
 // ActionBase should be included by all Action types as an embedded struct
@@ -15,9 +14,4 @@ type ActionBase struct {
 	// @I Added CreatedAt and UpdatedAt fields in Actions
 
 	Name string `json:"name"`
-}
-
-// GetName returns the name of an Action.
-func (action ActionBase) GetName() string {
-	return action.Name
 }
