@@ -193,8 +193,8 @@ func Storage(config map[string]string) gin.HandlerFunc {
 
 // Struct for holding the request data for the Create endpoint.
 type requestJSONCreate struct {
-	Type   string          `json="type"`
-	Action json.RawMessage `json="action"`
+	Type   string          `json:"type"`
+	Action json.RawMessage `json:"action"`
 }
 
 // Get the right Action type based on the "type" parameter included in the
