@@ -13,7 +13,6 @@ package msWatchWrapper
 import (
 	// Utilities.
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -22,14 +21,14 @@ import (
 	health "github.com/krystalcode/go-mantis-shrimp/watches/health_check"
 )
 
-// Wrapper structure that holds the type of the Watch as well.
+// WatchWrapper provides a structure that holds a Watch together with its type.
 type WatchWrapper struct {
 	Type  string       `json:"type"`
 	Watch common.Watch `json:"watch"`
 }
 
-// Properly decode a Wrapper JSON object and the contained Watch depending on
-// the value of the "type" field.
+// UnmarshalJSON properly decodes a WatchWrapper JSON object by decoding the
+// contained Watch depending on the value of the "type" field.
 func (wrapper *WatchWrapper) UnmarshalJSON(bytes []byte) error {
 	// Get the first-level fields as json.RawMessage data.
 	var jsonMap map[string]*json.RawMessage
@@ -41,7 +40,7 @@ func (wrapper *WatchWrapper) UnmarshalJSON(bytes []byte) error {
 	// We need the type of the Watch to be given, otherwise we cannot decode the
 	// JSON data.
 	if jsonMap["type"] == nil && jsonMap["watch"] != nil {
-		return errors.New("Cannot decode WatchWrapper JSON object without given the Watch's type.")
+		return fmt.Errorf("cannot decode WatchWrapper JSON object without given the Watch's type")
 	}
 
 	// Get the Watch type from the corresponding field.
@@ -68,19 +67,17 @@ func (wrapper *WatchWrapper) UnmarshalJSON(bytes []byte) error {
 		wrapper.Watch = watch
 		break
 	default:
-		return errors.New(
-			fmt.Sprintf(
-				"Unknown Watch type \"%s\" while trying to decode a WatchWrapper JSON object",
-				watchType,
-			),
+		return fmt.Errorf(
+			"unknown Watch type \"%s\" while trying to decode a WatchWrapper JSON object",
+			watchType,
 		)
 	}
 
 	return nil
 }
 
-// Given a Watch, create a WatchWrapper based on its type detected via
-// reflection.
+// Wrapper creates a WatchWrapper for the given Watch, based on its type that is
+// detected via reflection.
 func Wrapper(watch common.Watch) (*WatchWrapper, error) {
 	var watchType string
 
@@ -90,11 +87,9 @@ func Wrapper(watch common.Watch) (*WatchWrapper, error) {
 		watchType = "health_check"
 		break
 	default:
-		err := errors.New(
-			fmt.Sprintf(
-				"Unknown Watch struct \"%s\" when trying to wrap a Watch in a wrapper.",
-				structType,
-			),
+		err := fmt.Errorf(
+			"unknown Watch struct \"%s\" when trying to wrap a Watch in a wrapper",
+			structType,
 		)
 		return nil, err
 	}

@@ -7,7 +7,6 @@ package msWatchHealthCheck
 import (
 	// Utilities.
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -21,6 +20,9 @@ import (
  * Types and their functions.
  */
 
+// Watch implements the common.Watch interface. It provides a Watch that checks
+// the health status of the defined URL. Its evaluation of whether the included
+// Actions will be executed depend on the evaluation of its Conditions.
 type Watch struct {
 	common.WatchBase
 
@@ -38,7 +40,9 @@ type Watch struct {
 	result Result
 }
 
-// Implements common.Watch.Do().
+// Do implements common.Watch.Do(). It prepares the Result of the Watch, it
+// evalutes the Conditions, and returns the IDs of the Actions that should be
+// triggered as a result of the Watch, if any.
 func (watch Watch) Do() []int {
 	watch.data()
 	ok := watch.evaluate()
@@ -94,10 +98,11 @@ func (watch *Watch) data() {
 // Go through all Conditions defined in the Watch and evaluate them. The
 // Condtions are successful in their entirety when all Conditions evaluate
 // successfully.
-// @I Support Condition operators in Watches that would allow combining
-//    Conditions in flexible ways
-// @I Consider abstracting the Watch.evalute() function so that it is reusable
 func (watch *Watch) evaluate() bool {
+	// @I Support Condition operators in Watches that would allow combining
+	//    Conditions in flexible ways
+	// @I Consider abstracting the Watch.evalute() function so that it is reusable
+
 	allOk := true
 	for _, condition := range watch.Conditions {
 		ok := condition.Do(watch.result)
@@ -110,8 +115,8 @@ func (watch *Watch) evaluate() bool {
 	return allOk
 }
 
-// The result of a URL health check. Simply a string that can hold one of the
-// following values:
+// Result holds the result of a URL health check. It is simply a string that can
+// hold one of the following values:
 // - success
 // - inaccessible
 // - timeout
@@ -120,16 +125,19 @@ type Result struct {
 	Status string
 }
 
-// All Conditions should implement this interface.
-// It simply defines a function that, given the Result of a health check
-// operation, decides whether it passes the Condition.
+// Condition is an interface that should be implemented by all Condition types
+// for the Health Check Watch. It simply defines a function that, given the
+// Result of a Health Check operation, it decides whether the Condition is met.
 type Condition interface {
 	Do(Result) bool
 }
 
-// Condition that succeeds when the health check is successful.
+// ConditionSuccess implements the Condition interface, providing a Condition
+// that is met when the Result of a Health Check is successful ("success").
 type ConditionSuccess struct{}
 
+// Do implements Condition.Do(), determining whether the Result of a Health
+// Check operation is successful.
 func (condition ConditionSuccess) Do(result Result) bool {
 	if result.Status == "success" {
 		return true
@@ -138,9 +146,13 @@ func (condition ConditionSuccess) Do(result Result) bool {
 	return false
 }
 
-// Condition that succeeds when the health check has failed for whatever reason.
+// ConditionFailure implements the Condition interface, providing a Condition
+// that is met when the Result of a Health Check is unsuccessful (any other
+// result apart from "success").
 type ConditionFailure struct{}
 
+// Do implements Condition.Do(), determining whether the Result of a Health
+// Check operation is unsuccessful.
 func (condition ConditionFailure) Do(result Result) bool {
 	if result.Status != "success" {
 		return true
@@ -153,16 +165,25 @@ func (condition ConditionFailure) Do(result Result) bool {
  * JSON.
  */
 
+// MarshalJSON encodes a ConditionSuccess object into a JSON object that
+// contains a single field, indicating its type. This is desired so that a
+// JSON-encoded Watch object containing such a Condition can be then decoded
+// based on the Condition type.
 func (condition ConditionSuccess) MarshalJSON() ([]byte, error) {
 	return []byte(`{"type":"success"}`), nil
 }
 
+// MarshalJSON encodes a ConditionFailure object into a JSON object that
+// contains a single field, indicating its type. This is desired so that a
+// JSON-encoded Watch object containing such a Condition can be then decoded
+// based on the Condition type.
 func (condition ConditionFailure) MarshalJSON() ([]byte, error) {
 	return []byte(`{"type":"failure"}`), nil
 }
 
-// We need some special handling for decoding JSON since the Conditions can be
-// of different types.
+// UnmarshalJSON provides decoding of a JSON-encoded Watch object so that the
+// Conditions held in the "conditions" field are properly constructed based on
+// their type.
 func (watch *Watch) UnmarshalJSON(bytes []byte) error {
 	// Deserialize everything into a map of json.RawMessage; its indices would
 	// correspond to the Watch struct's fields.
@@ -255,7 +276,7 @@ func (watch *Watch) UnmarshalJSON(bytes []byte) error {
 			watch.Conditions[index] = ConditionFailure{}
 			break
 		default:
-			return errors.New(fmt.Sprintf("Unknown Condition type \"%s\"", conditionType))
+			return fmt.Errorf("unknown Condition type \"%s\"", conditionType)
 		}
 	}
 

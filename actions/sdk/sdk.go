@@ -7,21 +7,21 @@ package msActionSDK
 import (
 	// Utilities.
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
-// Structure that holds any configuration required.
+// Config holds any configuration required to perform calls to the Action API.
 type Config struct {
 	BaseURL string
 	Version string
 }
 
-// Trigger an individual Action, given its ID.
-func TriggerById(_id int, config Config) error {
+// TriggerByID makes a POST request that triggers the Action that corresponds to
+// the given ID.
+func TriggerByID(_id int, config Config) error {
 	// Prepare the URL and the request body.
 	idString := strconv.Itoa(_id)
 	url := config.BaseURL + "/v" + config.Version + "/" + idString + "/trigger"
@@ -45,23 +45,19 @@ func TriggerById(_id int, config Config) error {
 	if resStatus != http.StatusOK {
 		resBody, ioErr := ioutil.ReadAll(res.Body)
 		if ioErr != nil {
-			err = errors.New(
-				fmt.Sprintf(
-					"Response Status not \"200 OK\" when triggering an Action by its ID. Status: \"%s\", Headers: \"%s\", Body: An error occurred while decoding the body: \"%s\".",
-					res.Status,
-					res.Header,
-					ioErr,
-				),
+			err = fmt.Errorf(
+				"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%s\", Headers: \"%s\", Body: An error occurred while decoding the body: \"%s\"",
+				res.Status,
+				res.Header,
+				ioErr,
 			)
 			return err
 		}
-		err = errors.New(
-			fmt.Sprintf(
-				"Response Status not \"200 OK\" when triggering an Action by its ID. Status: \"%s\", Headers: \"%s\", Body: \"%s\".",
-				res.Status,
-				res.Header,
-				resBody,
-			),
+		err = fmt.Errorf(
+			"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%s\", Headers: \"%s\", Body: \"%s\"",
+			res.Status,
+			res.Header,
+			resBody,
 		)
 		return err
 	}

@@ -53,11 +53,19 @@ func main() {
  * Endpoint controllers.
  */
 
-// Create an Action based on the given parameters.
+// v1Create provides an endpoint that creates a new Action based on the JSON
+// object given in the request.
 func v1Create(c *gin.Context) {
+	/**
+	 * @I Implement authentication of the caller
+	 * @I Validate parameters per action type
+	 * @I Ensure the caller has the permissions to create actions
+	 * @I Log errors and send a 500 response instead of panicking
+	 */
+
 	// The parameters are provided as a JSON object in the request. Bind it to an
 	// object of the corresponding type.
-	var JSONBody requestJSON_Create
+	var JSONBody requestJSONCreate
 	err := c.BindJSON(&JSONBody)
 	if err != nil {
 		panic(err)
@@ -92,13 +100,6 @@ func v1Create(c *gin.Context) {
 	storage := c.MustGet("storage").(storage.Storage)
 	_id := storage.Set(action)
 
-	/**
-	 * @I Implement authentication of the caller
-	 * @I Validate parameters per action type
-	 * @I Ensure the caller has the permissions to create actions
-	 * @I Log errors and send a 500 response instead of panicking
-	 */
-
 	// All good.
 	c.JSON(
 		http.StatusOK,
@@ -109,17 +110,19 @@ func v1Create(c *gin.Context) {
 	)
 }
 
-// Trigger the Action given by its ID.
-/**
- * @I Implement authentication of the caller
- * @I Does the _id need any escaping?
- * @I Ensure the caller has the permissions to trigger actions
- * @I Consider allowing the caller to pass on the actions as well for being
- *    able to avoid the extra database call
- * @I Investigate whether we need our own response status codes
- * @I Allow triggering multiple action ids in one request
- */
+// v1Trigger provides an endpoint that triggers the Action given in the request
+// by its ID.
 func v1Trigger(c *gin.Context) {
+	/**
+	 * @I Implement authentication of the caller
+	 * @I Does the _id need any escaping?
+	 * @I Ensure the caller has the permissions to trigger actions
+	 * @I Consider allowing the caller to pass on the actions as well for being
+	 *    able to avoid the extra database call
+	 * @I Investigate whether we need our own response status codes
+	 * @I Allow triggering multiple action ids in one request
+	 */
+
 	// The _id parameter is required.
 	_idString := c.Param("_id")
 	if _idString == "" {
@@ -171,7 +174,8 @@ func v1Trigger(c *gin.Context) {
  * Middleware.
  */
 
-// Middleware for making available the storate engine to the controllers.
+// Storage is a Gin middleware that makes available the Storage engine to the
+// endpoint controllers.
 func Storage(config map[string]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		storage, err := storage.Create(config)
@@ -188,7 +192,7 @@ func Storage(config map[string]string) gin.HandlerFunc {
  */
 
 // Struct for holding the request data for the Create endpoint.
-type requestJSON_Create struct {
+type requestJSONCreate struct {
 	Type   string          `json="type"`
 	Action json.RawMessage `json="action"`
 }
@@ -196,7 +200,7 @@ type requestJSON_Create struct {
 // Get the right Action type based on the "type" parameter included in the
 // request, so that we can properly convert the JSON parameters into an Action
 // object.
-func (requestData requestJSON_Create) actionByType() common.Action {
+func (requestData requestJSONCreate) actionByType() common.Action {
 	switch requestData.Type {
 	case "chat_message":
 		var action chat.Action

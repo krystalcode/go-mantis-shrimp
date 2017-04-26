@@ -20,8 +20,12 @@ import (
  */
 
 // @I Make the Action API base url configurable
-const ActionApiBaseURL = "http://ms-action-api:8888"
-const ActionApiVersion = "1"
+
+// ActionAPIBaseURL holds the base url where the Action API should be contacted.
+const ActionAPIBaseURL = "http://ms-action-api:8888"
+
+// ActionAPIVersion holds the version of the Action API that client calls use.
+const ActionAPIVersion = "1"
 
 /**
  * Main program entry.
@@ -57,15 +61,17 @@ func main() {
  * Endpoint functions.
  */
 
-// Create a new Watch.
-/**
- * @I Implement authentication of the caller
- * @I Validate parameters per Watch type
- * @I Ensure the caller has the permissions to create Watches
- * @I Log errors and send a 500 response instead of panicking
- * @I Implement creating and triggering a Watch in a single request
- */
+// v1Create provides an endpoint that creates a new Watch based on the JSON object
+// given in the request.
 func v1Create(c *gin.Context) {
+	/**
+	 * @I Implement authentication of the caller
+	 * @I Validate parameters per Watch type
+	 * @I Ensure the caller has the permissions to create Watches
+	 * @I Log errors and send a 500 response instead of panicking
+	 * @I Implement creating and triggering a Watch in a single request
+	 */
+
 	// The parameters are provided as a JSON object in the request. Bind it to an
 	// object of the corresponding type.
 	var wrapper wrapper.WatchWrapper
@@ -102,15 +108,17 @@ func v1Create(c *gin.Context) {
 	)
 }
 
-// Trigger the Watch given by its ID.
-/**
- * @I Implement authentication of the caller
- * @I Does the _id need any escaping?
- * @I Ensure the caller has the permissions to trigger evaluation of a Watch
- * @I Investigate whether we need our own response status codes
- * @I Allow triggering multiple action ids in one request
- */
+// v1Trigger provides an endpoint that triggers execution of the Action given in
+// the request by its ID, by making a call to the Action API.
 func v1Trigger(c *gin.Context) {
+	/**
+	 * @I Implement authentication of the caller
+	 * @I Does the _id need any escaping?
+	 * @I Ensure the caller has the permissions to trigger evaluation of a Watch
+	 * @I Investigate whether we need our own response status codes
+	 * @I Allow triggering multiple action ids in one request
+	 */
+
 	// The _id parameter is required.
 	_idString := c.Param("_id")
 	if _idString == "" {
@@ -154,13 +162,13 @@ func v1Trigger(c *gin.Context) {
 		}
 
 		sdkConfig := sdk.Config{
-			BaseURL: ActionApiBaseURL,
-			Version: ActionApiVersion,
+			BaseURL: ActionAPIBaseURL,
+			Version: ActionAPIVersion,
 		}
 		// @I Trigger all Watch Actions in one request
-		for _, actionId := range actionsIds {
+		for _, actionID := range actionsIds {
 			go func() {
-				err := sdk.TriggerById(actionId, sdkConfig)
+				err := sdk.TriggerByID(actionID, sdkConfig)
 				if err != nil {
 					// @I Investigate log management strategy for all services
 					fmt.Println(err)
@@ -182,7 +190,8 @@ func v1Trigger(c *gin.Context) {
  * Middleware.
  */
 
-// Middleware for making available the storate engine to the controllers.
+// Storage is a Gin middleware that makes available the Storage engine to the
+// endpoint controllers.
 func Storage(config map[string]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		storage, err := storage.Create(config)

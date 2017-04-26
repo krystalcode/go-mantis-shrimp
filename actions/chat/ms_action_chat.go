@@ -24,7 +24,10 @@ import (
  * Types and their methods.
  */
 
-// Action for posting a message to the chat application.
+// Action implements the common.Action interface. It provides an Action that
+// posts a message to a chat application such as Rocket.Chat, Mattermost, Slack
+// or HipChat. Rocket.Chat-style message payload via a webhook is supported at
+// the moment.
 type Action struct {
 	// Common fields for all actions.
 	common.ActionBase
@@ -34,8 +37,8 @@ type Action struct {
 	Message Message `json:"message"`
 }
 
-// Implements Action interface.
-// Executes the action by posting the message to the chat application.
+// Do Implements common.Action.Do().
+// It executes the Chat Action by posting the message to the chat application.
 func (action Action) Do() {
 	// Convert the message to JSON.
 	body, err := json.Marshal(action.Message)
@@ -68,8 +71,9 @@ func (action Action) Do() {
 	}
 }
 
-// Holds a message. Implements the structure required by Rocket Chat
-// https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
+// Message holds a chat message. Implements the structure required by
+// Rocket.Chat.
+// @see https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
 type Message struct {
 	Text        *string       `json:"text,omitempty"`
 	Alias       *string       `json:"alias,omitempty"`
@@ -78,11 +82,14 @@ type Message struct {
 	Attachments *[]Attachment `json:"attachments,omitempty"`
 }
 
+// Attachment holds chat message attachments. Implements the structure required
+// by Rocket.Chat.
+// @see https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
 type Attachment struct {
 	Color             *string  `json:"color,omitempty"`
 	Text              *string  `json:"text,omitempty"`
 	Ts                *string  `json:"ts,omitempty"`
-	ThumbUrl          *string  `json:"thumb_url,omitempty"`
+	ThumbURL          *string  `json:"thumb_url,omitempty"`
 	MessageLink       *string  `json:"message_link,omitempty"`
 	Collapsed         *bool    `json:"collapsed,omitempty"`
 	AuthorName        *string  `json:"author_name,omitempty"`
@@ -96,6 +103,9 @@ type Attachment struct {
 	Fields            *[]Field `json:"fields,omitempty"`
 }
 
+// Field holds chat message attachment fields. Implements the structure required
+// by Rocket.Chat.
+// @see https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
 type Field struct {
 	Short *bool   `json:"short,omitempty"`
 	Title *string `json:"title,omitempty"`

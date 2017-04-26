@@ -15,8 +15,12 @@ import (
  */
 
 // @I Make the Watch API base url configurable
-const WatchApiBaseURL = "http://ms-watch-api:8888"
-const WatchApiVersion = "1"
+
+// WatchAPIBaseURL holds the base url where the Watch API should be contacted.
+const WatchAPIBaseURL = "http://ms-watch-api:8888"
+
+// WatchAPIVersion holds the version of the Watch API that client calls use.
+const WatchAPIVersion = "1"
 
 /**
  * Main program entry.
@@ -54,10 +58,11 @@ func main() {
 	}
 }
 
-// Regularly look for Watch candidate for triggering.
-// @I Search for candidate Watches in a connected Elastic Search database
-// @I Support different sources of candidate Watches configurable via JSON or YAML
+// search looks for Watches that are candidate for triggering at regular intervals.
 func search(watches chan<- Watch) {
+	// @I Search for candidate Watches in a connected Elastic Search database
+	// @I Support different sources of candidate Watches configurable via JSON or YAML
+
 	newWatches := loadWatches()
 	for _, watch := range newWatches {
 		watches <- watch
@@ -66,8 +71,9 @@ func search(watches chan<- Watch) {
 	search(watches)
 }
 
-// Filter candidate Watches to ensure that we don't run expired Watches or that we
-// don't run them prematurely.
+// filter inspects candidate Watches and it selects only Watches that have not
+// expired and that we are past their starting point. It then calls the function
+// that will trigger the Watches that pass these conditions.
 func filter(watch Watch, triggers chan<- Watch) {
 	now := time.Now()
 	afterStart := watch.start == nil || now.After(*watch.start)
@@ -80,17 +86,19 @@ func filter(watch Watch, triggers chan<- Watch) {
 	}
 }
 
-// Execute triggering of Watches by sending to the corresponding channel.
-// @I Consider rescheduling of triggered Watches via the corresponding channel
+// run sends the Watches to the channel where they will be queued for triggering.
 func run(watch Watch, triggers chan<- Watch) {
+	// @I Consider rescheduling of triggered Watches via the corresponding channel
+
 	triggers <- watch
 	time.Sleep(watch.interval)
 	filter(watch, triggers)
 }
 
-// Trigger an Watch by making a call to the Trigger API.
+// trigger executes triggering of the Watch given by its ID by making a call to
+// the Trigger API.
 func trigger(_id string) {
-	url := WatchApiBaseURL + "/v" + WatchApiVersion + "/"
+	url := WatchAPIBaseURL + "/v" + WatchAPIVersion + "/"
 	body := []byte("{\"_id\":\"" + _id + "\"}")
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -117,7 +125,8 @@ func trigger(_id string) {
 	}
 }
 
-// Temporary function that acts as a candidate Watches source.
+// loadWatches is a temporary function that acts as a candidate Watches source.
+// It will be removed once we implement Storage.
 func loadWatches() []Watch {
 	watches := []Watch{
 		Watch{
@@ -137,6 +146,7 @@ func loadWatches() []Watch {
 	return watches
 }
 
+// Watch holds the details of a Watch.
 type Watch struct {
 	// Unique Watch identifier.
 	_id string

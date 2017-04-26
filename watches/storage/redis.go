@@ -7,7 +7,6 @@ package msWatchStorage
 import (
 	// Utilities
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -23,13 +22,15 @@ import (
  * Redis storage provider.
  */
 
-// Implements the Storage interface.
+// Redis implements the Storage interface, allowing to use Redis as a Storage
+// engine.
 type Redis struct {
 	dsn    string
 	client *redis.Client
 }
 
-// Get a Watch by its ID.
+// Get implements Storage.Get(). It retrieves from Storage and returns the Watch
+// for the given ID.
 func (storage Redis) Get(_id int) common.Watch {
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
@@ -58,11 +59,13 @@ func (storage Redis) Get(_id int) common.Watch {
 	return wrapper.Watch
 }
 
-// Set an Watch.
-// @I Consider using hashmaps instead of json values
-// @I Investigate risk of a Watch overriding another due to race conditions when
-//    creating them
+// Set implements Storage.Set(). It stores the given Watch object to the Redis
+// Storage.
 func (storage Redis) Set(watch common.Watch) int {
+	// @I Consider using hashmaps instead of json values
+	// @I Investigate risk of a Watch overriding another due to race conditions when
+	//    creating them
+
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
 	}
@@ -92,6 +95,8 @@ func (storage Redis) Set(watch common.Watch) int {
 	return _id
 }
 
+// generateID generates an ID for a new Watch by incrementing the last known
+// Watch ID.
 func (storage Redis) generateID() int {
 	// Get the last ID that exists on the Watches index set, so that we can generate
 	// the next one.
@@ -113,24 +118,22 @@ func (storage Redis) generateID() int {
 	return _id + 1
 }
 
-// Implements the StorageFactory interface.
-// Connects to the Redis database defined in the given configuration and returns
-// the storage.
+// NewRedisStorage implements the StorageFactory function type. It initiates a
+// connection to the Redis database defined in the given configuration, and it
+// returns the Storage engine object.
 func NewRedisStorage(config map[string]string) (Storage, error) {
 	dsn, ok := config["STORAGE_REDIS_DSN"]
 	if !ok {
-		err := errors.New(
-			fmt.Sprintf(
-				"The \"%s\" configuration option is required for the Redis storage",
-				"STORAGE_REDIS_DSN",
-			),
+		err := fmt.Errorf(
+			"the \"%s\" configuration option is required for the Redis storage",
+			"STORAGE_REDIS_DSN",
 		)
 		return nil, err
 	}
 
 	client, err := redis.Dial("tcp", dsn)
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Failed to connect to Redis: %s", err.Error()))
+		err := fmt.Errorf("failed to connect to Redis: %s", err.Error())
 		return nil, err
 	}
 
