@@ -63,7 +63,7 @@ func (watch Watch) Do() []int {
 	// If all conditions pass, return the IDs of the Actions that should be
 	// triggered.
 	// Store any Actions given in the Actions field and return their IDs as well.
-	return watch.ActionsIds
+	return watch.ActionsIDs
 }
 
 // SetHTTPClient allows to inject an HTTP client into the corresponding field.
@@ -222,7 +222,7 @@ func (watch *Watch) UnmarshalJSON(bytes []byte) error {
 		if err != nil {
 			return err
 		}
-		watch.ActionsIds = actionsIds
+		watch.ActionsIDs = actionsIds
 	}
 	if jsonMap["url"] != nil {
 		var URL string

@@ -20,6 +20,6 @@ type WatchBase struct {
 	// @I Add CreatedAt and UpdatedAt fields in Watches
 
 	Name       string           `json:"name"`
-	ActionsIds []int            `json:"actions_ids"`
+	ActionsIDs []int            `json:"actions_ids"`
 	Actions    []actions.Action `json:"actions"`
 }
