@@ -100,3 +100,54 @@ func Wrapper(watch common.Watch) (*WatchWrapper, error) {
 	}
 	return &wrapper, nil
 }
+
+// WatchFactory is a function type that should be implemented by all Watch
+// factories. It defines a function that receives the JSON-encoded Watch object
+// (in raw bytes), and it returs the corresponding Watch object, including any
+// initializations required such as dependency injection.
+type WatchFactory func(jsonWatch *json.RawMessage) (common.Watch, error)
+
+// Create creates and returns an initialized Watch object that corresponds to
+// the type and holds the data defined to the given JSON-object byte slice.
+func Create(jsonWatch []byte) (common.Watch, error) {
+	// Register factories the first time we create a Watch. We may create a more
+	// generic registration mechanism when we support more Watch factories that
+	// may also be registered independently, but for now this is sufficient.
+	if len(watchFactories) == 0 {
+		watchFactories["health_check"] = health.NewHealthCheckWatch
+	}
+
+	var jsonMap map[string]*json.RawMessage
+	err := json.Unmarshal(jsonWatch, &jsonMap)
+	if err != nil {
+		return nil, err
+	}
+
+	// We need to be given the type as well, otherwise we can't know what type of
+	// Watch we need to create.
+	if jsonMap["type"] == nil {
+		err = fmt.Errorf("trying to create a Watch from a JSON object that does not contain the Watch's type")
+		return nil, err
+	}
+
+	var watchType string
+	err = json.Unmarshal(*jsonMap["type"], &watchType)
+	if err != nil {
+		return nil, err
+	}
+
+	factory, ok := watchFactories[watchType]
+	if !ok {
+		err := fmt.Errorf("unknown Watch factory for type \"%s\"", watchType)
+		return nil, err
+	}
+
+	return factory(jsonMap["watch"])
+}
+
+/**
+ * For internal use.
+ */
+
+// watchFactories holds a map of all known Watch factories.
+var watchFactories = make(map[string]WatchFactory)

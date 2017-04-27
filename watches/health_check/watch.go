@@ -20,6 +20,13 @@ import (
  * Types and their functions.
  */
 
+// HTTPClient is an interface that is used to allow dependency injection of the
+// HTTP client that makes the request to the Watch's URL. Dependency injection
+// is necessary for testing purposes.
+type HTTPClient interface {
+	Get(string) (*http.Response, error)
+}
+
 // Watch implements the common.Watch interface. It provides a Watch that checks
 // the health status of the defined URL. Its evaluation of whether the included
 // Actions will be executed depend on the evaluation of its Conditions.
@@ -36,6 +43,8 @@ type Watch struct {
 	// Actions should be triggered or not.
 	Conditions []Condition `json:"conditions"`
 
+	// The HTTP client used to make the request to the URL.
+	httpClient HTTPClient
 	// The result of the data operation.
 	result Result
 }
@@ -57,12 +66,14 @@ func (watch Watch) Do() []int {
 	return watch.ActionsIds
 }
 
+// SetHTTPClient allows to inject an HTTP client into the corresponding field.
+func (watch *Watch) SetHTTPClient(client HTTPClient) {
+	watch.httpClient = client
+}
+
 // Makes a GET call to the URL defined in the Watch and determines the Result.
 func (watch *Watch) data() {
-	client := &http.Client{
-		Timeout: watch.Timeout,
-	}
-	res, err := client.Get(watch.URL)
+	res, err := watch.httpClient.Get(watch.URL)
 	if err != nil {
 		// @I Differentiate between lack of accessibility and timeout in health
 		//    check watch
@@ -282,4 +293,24 @@ func (watch *Watch) UnmarshalJSON(bytes []byte) error {
 	}
 
 	return nil
+}
+
+// NewHealthCheckWatch implements the WatchFactory function type. It creates a
+// Health Check Watch based on the given JSON-object, and initializes it by
+// injecting the required HTTP client.
+var NewHealthCheckWatch = func(jsonWatch *json.RawMessage) (common.Watch, error) {
+	// Create a Watch object from JSON.
+	var watch Watch
+	err := json.Unmarshal(*jsonWatch, &watch)
+	if err != nil {
+		return nil, err
+	}
+
+	// Inject an HTTP client with the Watch's timeout.
+	client := &http.Client{
+		Timeout: watch.Timeout,
+	}
+	watch.SetHTTPClient(client)
+
+	return watch, nil
 }

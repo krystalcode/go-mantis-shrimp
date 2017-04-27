@@ -52,11 +52,13 @@ func (storage Redis) Get(_id int) common.Watch {
 		return nil
 	}
 
-	// We store the Watches as WatchWrappers that contain the Watch type as well.
-	var wrapper wrapper.WatchWrapper
-	json.Unmarshal(jsonWatch, &wrapper)
+	// Create and initialize a Watch object based on the given JSON object.
+	watch, err := wrapper.Create(jsonWatch)
+	if err != nil {
+		panic(err)
+	}
 
-	return wrapper.Watch
+	return watch
 }
 
 // Set implements Storage.Set(). It stores the given Watch object to the Redis
