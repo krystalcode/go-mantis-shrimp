@@ -32,6 +32,8 @@ type Redis struct {
 // Get implements Storage.Get(). It retrieves from Storage and returns the Watch
 // for the given ID.
 func (storage Redis) Get(_id int) common.Watch {
+	// @I Delegate error handling to the caller in Storage API functions
+
 	if storage.client == nil {
 		panic("The Redis client has not been initialized yet.")
 	}
