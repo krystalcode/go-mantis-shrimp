@@ -55,7 +55,10 @@ func (storage Redis) Get(_id int) common.Action {
 	// @I Dynamically detect the Action type and convert json to struct
 	//    accordingly
 	action := chat.Action{}
-	json.Unmarshal(jsonAction, &action)
+	err = json.Unmarshal(jsonAction, &action)
+	if err != nil {
+		return err
+	}
 
 	return action
 }
