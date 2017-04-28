@@ -57,7 +57,7 @@ func (storage Redis) Get(_id int) common.Action {
 	action := chat.Action{}
 	err = json.Unmarshal(jsonAction, &action)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	return action
