@@ -16,6 +16,10 @@ import (
 // Schedule holds the data required for defining when a set of Watches should be
 // triggered e.g. how frequently and between which start and end times.
 type Schedule struct {
+	// @I Add a LastTriggered field that holds the time when the Schedule's
+	//    Watches were triggered
+	// @I Add CreatedAt and UpdatedAt fields in Schedule struct
+
 	// Triggering the Watches is limited only between the start and end times.
 	Start *time.Time `json:"start"`
 	Stop  *time.Time `json:"stop"`
