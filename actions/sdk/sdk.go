@@ -35,27 +35,21 @@ func TriggerByID(_id int, config Config) error {
 	}
 	defer res.Body.Close()
 
-	// Extract status as integer from "200 OK"
-	resStatus, err := strconv.Atoi(res.Status[0:3])
-	if err != nil {
-		return err
-	}
-
 	// Response status should always be 200.
-	if resStatus != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		resBody, ioErr := ioutil.ReadAll(res.Body)
 		if ioErr != nil {
 			err = fmt.Errorf(
-				"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%s\", Headers: \"%s\", Body: An error occurred while decoding the body: \"%s\"",
-				res.Status,
+				"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%d\", Headers: \"%s\", Body: An error occurred while decoding the body: \"%s\"",
+				res.StatusCode,
 				res.Header,
 				ioErr,
 			)
 			return err
 		}
 		err = fmt.Errorf(
-			"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%s\", Headers: \"%s\", Body: \"%s\"",
-			res.Status,
+			"response Status not \"200 OK\" when triggering an Action by its ID; Status: \"%d\", Headers: \"%s\", Body: \"%s\"",
+			res.StatusCode,
 			res.Header,
 			resBody,
 		)
