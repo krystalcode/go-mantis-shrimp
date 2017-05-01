@@ -44,7 +44,7 @@ func (schedule Schedule) Do() []int {
 	now := time.Now()
 	afterStart := schedule.Start == nil || now.After(*schedule.Start)
 	beforeEnd := schedule.Stop == nil || now.Before(*schedule.Stop)
-	if afterStart && beforeEnd {
+	if afterStart && beforeEnd && schedule.Enabled {
 		return schedule.WatchesIDs
 	}
 
