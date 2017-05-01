@@ -15,11 +15,21 @@ Mantis Shrimp is a new project that aims to provide a hub for watching data and 
 The name is probably going to change as the scope and architecture of the project becomes clearer by the time it reaches its first stable version.
 
 ## Architecture
-Even though the architecture is still a subject for debate, we aim to create an extensible and scalable microservices architecture. Currently the following components exist:
-* Watch API: for managing watches and triggering their evaluation.
-* Watch Cron: plugin for triggering evaluation of watches (via Watch API) in regular intervals
-* Action API: for triggering an action
-* Action Chat Message: plugin for sending a message to a chat application e.g. Rocket Chat, Slack, HipChat etc.
+Even though the architecture is still a subject for debate, we aim to create an extensible and scalable microservices architecture. APIs are provided for managing and operating different parts of the system, and executable components can be developed using them to fit your requirements.
+
+### APIs
+* Watch API: manages Watches, evaluates them and triggers their Actions.
+* Watch Cron API: manages Cron Schedules i.e. Watches that need to be evaluated and triggered at regular intervals.
+* Action API: manages and triggers Actions.
+
+### Executable Components
+* Watch Cron: triggers Cron Schedules at regular intervals
+
+### Watch Types
+* Health Check Watch: checks the status of an external service and triggers an action depending on whether the service is accessible and depending on the response's HTTP status code is a desired one.
+
+### Action Types
+* Action Chat Message: sends a message to a chat application e.g. Rocket Chat, Slack, HipChat etc.
 
 ## How do I get set up?
 The project is very new and we will only provide instructions for setting up a development environment for contributing at this stage.
