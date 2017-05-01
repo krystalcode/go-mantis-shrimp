@@ -41,7 +41,7 @@ func main() {
 	}
 	router.Use(Storage(config))
 
-	// Version 1 of the trigger API.
+	// Version 1 of the Watch API.
 	v1 := router.Group("/v1")
 	{
 		// Create a new Watch.
