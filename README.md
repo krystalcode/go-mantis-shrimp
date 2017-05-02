@@ -26,7 +26,7 @@ Even though the architecture is still a subject for debate, we aim to create an 
 * Watch Cron: triggers Cron Schedules at regular intervals
 
 ### Watch Types
-* Health Check Watch: checks the status of an external service and triggers an action depending on whether the service is accessible and depending on the response's HTTP status code is a desired one.
+* Health Check Watch: checks the status of an external service and triggers one or more actions depending on whether the service is accessible and depending on the response's HTTP status code is a desired one.
 
 ### Action Types
 * Action Chat Message: sends a message to a chat application e.g. Rocket Chat, Slack, HipChat etc.
