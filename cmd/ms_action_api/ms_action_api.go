@@ -56,9 +56,10 @@ func main() {
 func v1Create(c *gin.Context) {
 	/**
 	 * @I Implement authentication of the caller
-	 * @I Validate parameters per action type
-	 * @I Ensure the caller has the permissions to create actions
+	 * @I Validate parameters per Action type
+	 * @I Ensure the caller has the permissions to create Actions
 	 * @I Log errors and send a 500 response instead of panicking
+	 * @I Implement creating and triggering an Action in a single request
 	 */
 
 	// The parameters are provided as a JSON object in the request. Bind it to an
