@@ -47,3 +47,6 @@ docker-compose up -d
 
 ## Contribution guidelines
 We welcome all contribution so that we can make this a successful community-driven project. Please open an issue to discuss any ideas or bugs, or open a pull request.
+
+### Sponsorship
+Development of this repository has been partly sponsored by the [Ya Market](https://ya-market.org). If you would like to contribute financially to guarantee the continuation of the project, get in touch. If you represent a company, I will be able to provide invoice.
