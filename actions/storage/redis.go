@@ -14,8 +14,8 @@ import (
 	"github.com/mediocregopher/radix.v2/redis"
 
 	// Internal dependencies.
-	chat "github.com/krystalcode/go-mantis-shrimp/actions/chat"
 	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
+	wrapper "github.com/krystalcode/go-mantis-shrimp/actions/wrapper"
 )
 
 /**
@@ -52,10 +52,8 @@ func (storage Redis) Get(_id int) common.Action {
 		return nil
 	}
 
-	// @I Dynamically detect the Action type and convert json to struct
-	//    accordingly
-	action := chat.Action{}
-	err = json.Unmarshal(jsonAction, &action)
+	// Create and initialize an Action object based on the given JSON object.
+	action, err := wrapper.Create(jsonAction)
 	if err != nil {
 		panic(err)
 	}
@@ -74,7 +72,12 @@ func (storage Redis) Set(action common.Action) int {
 		panic("The Redis client has not been initialized yet.")
 	}
 
-	jsonAction, err := json.Marshal(action)
+	// We'll be storing an ActionWrapper which contains the Action type as well.
+	wrapper, err := wrapper.Wrapper(action)
+	if err != nil {
+		panic(err)
+	}
+	jsonAction, err := json.Marshal(wrapper)
 	if err != nil {
 		panic(err)
 	}

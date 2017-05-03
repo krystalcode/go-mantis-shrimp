@@ -6,7 +6,6 @@ package main
 
 import (
 	// Utilities.
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -14,9 +13,8 @@ import (
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
-	chat "github.com/krystalcode/go-mantis-shrimp/actions/chat"
-	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
 	storage "github.com/krystalcode/go-mantis-shrimp/actions/storage"
+	wrapper "github.com/krystalcode/go-mantis-shrimp/actions/wrapper"
 )
 
 /**
@@ -65,12 +63,13 @@ func v1Create(c *gin.Context) {
 
 	// The parameters are provided as a JSON object in the request. Bind it to an
 	// object of the corresponding type.
-	var JSONBody requestJSONCreate
-	err := c.BindJSON(&JSONBody)
+	var wrapper wrapper.ActionWrapper
+	err := c.BindJSON(&wrapper)
 	if err != nil {
 		panic(err)
 	}
-	if JSONBody.Type == "" || len(JSONBody.Action) == 0 {
+	// @I Return 400 Bad Request if we are given no Action type in a Create request
+	if wrapper.Action == nil {
 		c.JSON(
 			http.StatusBadRequest,
 			gin.H{
@@ -81,20 +80,7 @@ func v1Create(c *gin.Context) {
 	}
 
 	// Get the Action as an object of the appropriate type.
-	action := JSONBody.actionByType()
-	err = json.Unmarshal(JSONBody.Action, &action)
-	if err != nil {
-		panic(err)
-	}
-	if action == nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status": http.StatusBadRequest,
-			},
-		)
-		return
-	}
+	action := wrapper.Action
 
 	// Store the Action.
 	storage := c.MustGet("storage").(storage.Storage)
@@ -185,27 +171,4 @@ func Storage(config map[string]string) gin.HandlerFunc {
 		c.Set("storage", storage)
 		c.Next()
 	}
-}
-
-/**
- * Endpoint helper types/functions.
- */
-
-// Struct for holding the request data for the Create endpoint.
-type requestJSONCreate struct {
-	Type   string          `json:"type"`
-	Action json.RawMessage `json:"action"`
-}
-
-// Get the right Action type based on the "type" parameter included in the
-// request, so that we can properly convert the JSON parameters into an Action
-// object.
-func (requestData requestJSONCreate) actionByType() common.Action {
-	switch requestData.Type {
-	case "chat_message":
-		var action chat.Action
-		return &action
-	}
-
-	return nil
 }
