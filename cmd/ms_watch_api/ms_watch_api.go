@@ -1,3 +1,7 @@
+/**
+ * Provides an API for triggering the execution of Watches.
+ */
+
 package main
 
 import (

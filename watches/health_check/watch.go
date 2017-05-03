@@ -31,6 +31,7 @@ type HTTPClient interface {
 // the health status of the defined URL. Its evaluation of whether the included
 // Actions will be executed depend on the evaluation of its Conditions.
 type Watch struct {
+	// Common fields and functions for all Watches.
 	common.WatchBase
 
 	// The URL that will be checked.
