@@ -48,8 +48,8 @@ type MockHTTPClient200 struct{}
 
 func (client MockHTTPClient200) Get(url string) (*http.Response, error) {
 	response := &http.Response{
-		Status: "200 OK",
-		Body:   ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+		StatusCode: 200,
+		Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
 	}
 
 	return response, nil
@@ -60,8 +60,8 @@ type MockHTTPClient400 struct{}
 
 func (client MockHTTPClient400) Get(url string) (*http.Response, error) {
 	response := &http.Response{
-		Status: "400 BadRequest",
-		Body:   ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+		StatusCode: 400,
+		Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
 	}
 
 	return response, nil
