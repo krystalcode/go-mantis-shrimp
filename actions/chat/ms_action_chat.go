@@ -15,7 +15,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 
 	// Internal dependencies.
@@ -75,13 +74,7 @@ func (action Action) Do() {
 	}
 	defer res.Body.Close()
 
-	// Extract status as integer from "200 OK"
-	resStatus, err := strconv.Atoi(res.Status[0:3])
-	if err != nil {
-		panic(err)
-	}
-
-	if resStatus != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		resBody, _ := ioutil.ReadAll(res.Body)
 		fmt.Println("Status:", res.Status)
 		fmt.Println("Headers:", res.Header)

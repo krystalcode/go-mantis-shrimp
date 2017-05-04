@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	// Internal dependencies.
@@ -82,16 +81,10 @@ func (watch *Watch) data() {
 		return
 	}
 
-	// Extract status as integer.
-	resStatusInt, err := strconv.Atoi(res.Status[0:3])
-	if err != nil {
-		panic(err)
-	}
-
 	// Check whether the Response Status is one that is considered successful.
 	statusMatch := false
 	for _, status := range watch.Statuses {
-		if resStatusInt == status {
+		if res.StatusCode == status {
 			statusMatch = true
 			break
 		}
