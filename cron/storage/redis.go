@@ -214,7 +214,7 @@ func (storage Redis) set(scheduleID int, schedule *schedule.Schedule) error {
 		*fields,
 	).Err
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Set the ID in the corresponding index.
