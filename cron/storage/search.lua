@@ -25,11 +25,20 @@ local stop  = tonumber(ARGV[3])
 -- returning.
 -- @I Look if there's a more efficient way to get the union of two tables in Lua
 for k, v in pairs(start_index) do
-   schedules[tonumber(v)] = redis.call("HGETALL", ARGV[1]..v)
+   local i = tonumber(v)
+   schedules[i] = redis.call("HGETALL", ARGV[1]..v)
+   -- Add the ID field to the returned values so that we know which Schedule the
+   -- rest of the fields correspond to.
+   schedules[i][#schedules[i]+1] = "id"
+   schedules[i][#schedules[i]+1] = v
 end
 for k, v in pairs(stop_index) do
-   if schedules[tonumber(v)] == nil then
-      schedules[tonumber(v)] = redis.call("HGETALL", ARGV[1]..v)
+   local i = tonumber(v)
+   if schedules[i] == nil then
+      schedules[i] = redis.call("HGETALL", ARGV[1]..v)
+      -- Add the ID field to the returned values.
+      schedules[i][#schedules[i]+1] = "id"
+      schedules[i][#schedules[i]+1] = v
    end
 end
 

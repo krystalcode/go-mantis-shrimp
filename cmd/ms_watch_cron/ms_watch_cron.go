@@ -116,6 +116,29 @@ func run(schedule schedule.Schedule, triggers chan<- int) {
 
 	watchesIDs := schedule.Do()
 
+	// If there are Watches to trigger, it means that the Schedule was successful.
+	// We update the current time to be the Schedule's last trigger time.
+	if len(watchesIDs) > 0 {
+		go func() {
+			// Create Redis Storage.
+			// @I Make Redis storage thread safe by using a connection pool instead of
+			//    creating a separate Redis instance
+			config := map[string]string{
+				"STORAGE_ENGINE":    "redis",
+				"STORAGE_REDIS_DSN": "redis:6379",
+			}
+			storage, err := storage.Create(config)
+			if err != nil {
+				panic(err)
+			}
+
+			// @I Update only the individual field instead of the full object.
+			now := time.Now()
+			schedule.Last = &now
+			storage.Update(&schedule)
+		}()
+	}
+
 	for _, ID := range watchesIDs {
 		triggers <- ID
 	}

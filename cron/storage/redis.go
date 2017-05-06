@@ -57,6 +57,26 @@ type Redis struct {
 	client *redis.Client
 }
 
+// Create implements Storage.Create(). It stores the given Schedule object as a
+// new Hash in the Redis Storage.
+func (storage Redis) Create(schedule *schedule.Schedule) (*int, error) {
+	// Generate an ID and store the Schedule.
+	scheduleID, err := storage.generateID()
+	if err != nil {
+		return nil, err
+	}
+
+	err = storage.set(*scheduleID, schedule)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the new ID in the corresponding Schedule field.
+	schedule.ID = *scheduleID
+
+	return scheduleID, nil
+}
+
 // Get implements Storage.Get(). It retrieves from Storage and returns the
 // Schedule for the given ID.
 func (storage Redis) Get(scheduleID int) (*schedule.Schedule, error) {
@@ -77,55 +97,16 @@ func (storage Redis) Get(scheduleID int) (*schedule.Schedule, error) {
 		return nil, err
 	}
 
+	schedule.ID = scheduleID
+
 	return schedule, nil
 }
 
-// Set implements Storage.Set(). It stores the given Schedule object as a Hash
-// in the Redis Storage.
-func (storage Redis) Set(schedule *schedule.Schedule) (*int, error) {
-	// @I Investigate risk of a Schedule overriding another due to race conditions
-	//    when creating them
-
-	if storage.client == nil {
-		return nil, fmt.Errorf("the Redis client has not been initialized yet")
-	}
-
-	// Convert the Schedule object into the Hash fields that will be stored.
-	fields := toHashFields(schedule)
-
-	// Generate an ID, store the Schedule, and update the index sets.
-	scheduleID := storage.generateID()
-	key := redisKey(scheduleID)
-	err := storage.client.Cmd(
-		"HMSET",
-		key,
-		*fields,
-	).Err
-	if err != nil {
-		panic(err)
-	}
-
-	// Add the ID to the corresponding index.
-	err = storage.client.Cmd("ZADD", redisScheduleIDIndex, scheduleID, key).Err
-	if err != nil {
-		return nil, err
-	}
-
-	// Add the start time to the corresponding index.
-	start := timeToHashField(schedule.Start)
-	err = storage.client.Cmd("ZADD", redisScheduleStartIndex, start, scheduleID).Err
-	if err != nil {
-		return nil, err
-	}
-
-	// Add the stop time to the corresponding index.
-	stop := timeToHashField(schedule.Stop)
-	err = storage.client.Cmd("ZADD", redisScheduleStopIndex, stop, scheduleID).Err
-	if err != nil {
-		return nil, err
-	}
-
-	return &scheduleID, err
+// Update implements Storage.Update(). It stores the given Schedule object as a Hash
+// in the Redis Storage, overriding the existing fields for the Hash with the
+// given ID.
+func (storage Redis) Update(schedule *schedule.Schedule) error {
+	return storage.set(schedule.ID, schedule)
 }
 
 // Search implements storage.Search(). It search for and returns Schedule
@@ -215,27 +196,80 @@ var NewRedisStorage = func(config map[string]string) (Storage, error) {
  * For internal use.
  */
 
+// set stores a Schedule object into a Redis Hash at the key corresponding to
+// the given ID.
+func (storage Redis) set(scheduleID int, schedule *schedule.Schedule) error {
+	if storage.client == nil {
+		return fmt.Errorf("the Redis client has not been initialized yet")
+	}
+
+	// Convert the Schedule object into the Hash fields that will be stored.
+	fields := toHashFields(schedule)
+
+	// Store the Schedule and update the index sets.
+	key := redisKey(scheduleID)
+	err := storage.client.Cmd(
+		"HMSET",
+		key,
+		*fields,
+	).Err
+	if err != nil {
+		panic(err)
+	}
+
+	// Set the ID in the corresponding index.
+	err = storage.client.Cmd("ZADD", redisScheduleIDIndex, scheduleID, key).Err
+	if err != nil {
+		return err
+	}
+
+	// Set the start time in the corresponding index.
+	start := timeToHashField(schedule.Start)
+	err = storage.client.Cmd("ZADD", redisScheduleStartIndex, start, scheduleID).Err
+	if err != nil {
+		return err
+	}
+
+	// Set the stop time in the corresponding index.
+	stop := timeToHashField(schedule.Stop)
+	err = storage.client.Cmd("ZADD", redisScheduleStopIndex, stop, scheduleID).Err
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // generateID generates an ID for a new Schedule by incrementing the last known
 // Schedule ID.
-func (storage Redis) generateID() int {
+func (storage Redis) generateID() (*int, error) {
+	// @I Investigate risk of a Schedule overriding another due to race conditions
+	//    when creating them
+
+	if storage.client == nil {
+		return nil, fmt.Errorf("the Redis client has not been initialized yet")
+	}
+
 	// Get the last ID that exists on the Schedules index set, so that we can
 	// generate the next one.
 	r, err := storage.client.Cmd("ZREVRANGE", redisScheduleIDIndex, 0, 0, "WITHSCORES").List()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// If there are no Schedules yet, start with ID 1.
 	if len(r) == 0 {
-		return 1
+		newScheduleID := 1
+		return &newScheduleID, nil
 	}
 
-	scheduleID, err := strconv.Atoi(r[1])
+	latestScheduleID, err := strconv.Atoi(r[1])
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return scheduleID + 1
+	newScheduleID := latestScheduleID + 1
+	return &newScheduleID, nil
 }
 
 // redisKey generates a Redis key for the given Schedule's ID.
@@ -270,6 +304,11 @@ func toHashFields(schedule *schedule.Schedule) *[]interface{} {
 		hashFields = append(hashFields, "stop")
 		hashFields = append(hashFields, schedule.Stop.UnixNano())
 	}
+	// Last.
+	if schedule.Last != nil {
+		hashFields = append(hashFields, "last")
+		hashFields = append(hashFields, schedule.Last.UnixNano())
+	}
 
 	return &hashFields
 }
@@ -290,6 +329,15 @@ func fromHashFields(hash *[]string) (*schedule.Schedule, error) {
 
 	schedule := schedule.Schedule{}
 	var err error
+
+	// ID. It is not available as a Hash field when we get the Hash individual,
+	// but we make it available in the Lua script where we return multiple Hashes.
+	if v, ok := kvHash["id"]; ok {
+		schedule.ID, err = strconv.Atoi(v)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// Mandatory fields.
 	// WatchesIDs.
@@ -323,6 +371,13 @@ func fromHashFields(hash *[]string) (*schedule.Schedule, error) {
 	// Stop.
 	if v, ok := kvHash["stop"]; ok {
 		schedule.Stop, err = timeFromHashField(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// Last.
+	if v, ok := kvHash["last"]; ok {
+		schedule.Last, err = timeFromHashField(v)
 		if err != nil {
 			return nil, err
 		}

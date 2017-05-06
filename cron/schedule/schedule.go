@@ -20,12 +20,18 @@ type Schedule struct {
 	//    Watches were triggered
 	// @I Add CreatedAt and UpdatedAt fields in Schedule struct
 
+	// The Schedule's unique identifier.
+	ID int `json:"id"`
+
 	// Triggering the Watches is limited only between the start and end times.
 	Start *time.Time `json:"start"`
 	Stop  *time.Time `json:"stop"`
 
 	// How frequently the Watches should be triggered.
 	Interval time.Duration `json:"interval"`
+
+	// The last time the Watches were triggered.
+	Last *time.Time
 
 	// A list of the Watches that are scheduled, given by their IDs.
 	WatchesIDs []int `json:"watches_ids"`

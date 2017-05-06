@@ -23,8 +23,9 @@ type Storage interface {
 	// @I Split Storage API Set function into a Create and an Update function
 	// @I Implement Delete function in the Storage API
 
+	Create(*schedule.Schedule) (*int, error)
 	Get(int) (*schedule.Schedule, error)
-	Set(*schedule.Schedule) (*int, error)
+	Update(*schedule.Schedule) error
 	Search(time.Duration) ([]*schedule.Schedule, error)
 }
 
