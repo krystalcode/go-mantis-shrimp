@@ -63,7 +63,7 @@ func v1Create(c *gin.Context) {
 
 	// Store the Watch.
 	storage := c.MustGet("storage").(storage.Storage)
-	scheduleID, err := storage.Set(&schedule)
+	scheduleID, err := storage.Create(&schedule)
 	if err != nil {
 		panic(err)
 	}
