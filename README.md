@@ -23,7 +23,7 @@ Even though the architecture is still a subject for debate, we aim to create an 
 * Action API: manages and triggers Actions.
 
 ### Executable Components
-* Watch Cron: triggers Cron Schedules at regular intervals
+* [Watch Cron](https://github.com/krystalcode/go-mantis-shrimp/blob/master/docs/components/cron.md): triggers Cron Schedules at regular intervals
 
 ### Watch Types
 * Health Check Watch: checks the status of an external service and triggers one or more actions depending on whether the service is accessible and depending on the response's HTTP status code is a desired one.
