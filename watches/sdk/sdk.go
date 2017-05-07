@@ -33,7 +33,7 @@ func TriggerByID(_id int, config Config) error {
 	client := &http.Client{}
 	res, err := client.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer res.Body.Close()
 
