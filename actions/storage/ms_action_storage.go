@@ -19,7 +19,7 @@ import (
 // Storage is an interface that should be implemented by all Storage engines.
 // It defines an API for storing and retrieving Action objects.
 type Storage interface {
-	Get(int) common.Action
+	Get(int) (*common.Action, error)
 	Set(common.Action) int
 }
 

@@ -8,11 +8,13 @@ import (
 	// Utilities.
 	"net/http"
 	"strconv"
+	"strings"
 
 	// Gin.
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
+	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
 	storage "github.com/krystalcode/go-mantis-shrimp/actions/storage"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/actions/wrapper"
 )
@@ -38,7 +40,7 @@ func main() {
 		v1.POST("/", v1Create)
 
 		// Trigger execution of the action via its ID.
-		v1.POST("/:_id/trigger", v1Trigger)
+		v1.POST("/:ids/trigger", v1Trigger)
 	}
 
 	/**
@@ -97,8 +99,8 @@ func v1Create(c *gin.Context) {
 	)
 }
 
-// v1Trigger provides an endpoint that triggers the Action given in the request
-// by its ID.
+// v1Trigger provides an endpoint that triggers the Actions given in the request
+// by their ID.
 func v1Trigger(c *gin.Context) {
 	/**
 	 * @I Implement authentication of the caller
@@ -107,46 +109,69 @@ func v1Trigger(c *gin.Context) {
 	 * @I Consider allowing the caller to pass on the actions as well for being
 	 *    able to avoid the extra database call
 	 * @I Investigate whether we need our own response status codes
-	 * @I Allow triggering multiple action ids in one request
 	 */
 
-	// The _id parameter is required.
-	_idString := c.Param("_id")
-	if _idString == "" {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status": http.StatusBadRequest,
-			},
-		)
-		return
+	// The "ids" parameter is required. We allow for multiple comma-separated
+	// string IDs, so we need to convert them to an array of integer IDs.
+	// We want to make sure that the caller makes the request they want to without
+	// mistakes, so we do not trigger any Actions if there is any error, even in
+	// one of the IDs.
+	sIDs := c.Param("ids")
+	aIDsString := strings.Split(sIDs, ",")
+
+	aIDsInt := make(map[int]struct{})
+	for _, sID := range aIDsString {
+		iID, err := strconv.Atoi(sID)
+		if err != nil {
+			c.JSON(
+				http.StatusNotFound,
+				gin.H{
+					"status": http.StatusNotFound,
+				},
+			)
+			return
+		}
+
+		if _, ok := aIDsInt[iID]; !ok {
+			aIDsInt[iID] = struct{}{}
+		}
 	}
 
-	// IDs are stored in storage as integers.
-	_id, err := strconv.Atoi(_idString)
-	if err != nil {
-		panic(err)
-	}
-
-	// Get the Action with the requested ID from storage.
+	// Get the Actions with the requested IDs from storage.
 	storage := c.MustGet("storage").(storage.Storage)
-	action := storage.Get(_id)
 
-	// Return a Not Found response if there is no action with such _id.
-	if action == nil {
-		c.JSON(
-			http.StatusNotFound,
-			gin.H{
-				"status": http.StatusNotFound,
-			},
-		)
-		return
+	var actions []*common.Action
+	for iID, _ := range aIDsInt {
+		action, err := storage.Get(iID)
+		if err != nil {
+			panic(err)
+		}
+
+		// Return a Not Found response if there is no Action with such ID.
+		if action == nil {
+			c.JSON(
+				http.StatusNotFound,
+				gin.H{
+					"status": http.StatusNotFound,
+				},
+			)
+			return
+		}
+
+		// We could trigger the Action at this point, however we prefer to check
+		// that all Actions exist first.
+		actions = append(actions, action)
 	}
 
-	// Trigger execution of the action.
-	// We only need to acknowledge that the Action was triggered; we don't have to
-	// for the execution to finish as this can take time.
-	go action.Do()
+	// Trigger executions of the Actions.
+	// We only need to acknowledge that the Actions were triggered; we don't have
+	// to for the execution to finish as this can take time.
+	for _, pointer := range actions {
+		go func() {
+			action := *pointer
+			action.Do()
+		}()
+	}
 
 	// All good.
 	c.JSON(

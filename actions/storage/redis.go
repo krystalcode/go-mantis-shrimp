@@ -31,16 +31,16 @@ type Redis struct {
 
 // Get implements Storage.Get(). It retrieves from Storage and returns the
 // Action for the given ID.
-func (storage Redis) Get(_id int) common.Action {
+func (storage Redis) Get(_id int) (*common.Action, error) {
 	if storage.client == nil {
-		panic("The Redis client has not been initialized yet.")
+		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
 	key := redisKey(_id)
 
 	r := storage.client.Cmd("GET", key)
 	if r.Err != nil {
-		panic(r.Err)
+		return nil, r.Err
 	}
 
 	jsonAction, err := r.Bytes()
@@ -49,16 +49,16 @@ func (storage Redis) Get(_id int) common.Action {
 	// stored, we should see how to handle this later.
 	// @I Handle edge cases when deserializing json in Redis
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	// Create and initialize an Action object based on the given JSON object.
 	action, err := wrapper.Create(jsonAction)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return action
+	return &action, nil
 }
 
 // Set implements Storage.Set(). It stores the given Action object to the Redis
