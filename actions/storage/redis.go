@@ -63,23 +63,23 @@ func (storage Redis) Get(_id int) (*common.Action, error) {
 
 // Set implements Storage.Set(). It stores the given Action object to the Redis
 // Storage.
-func (storage Redis) Set(action common.Action) int {
+func (storage Redis) Set(action common.Action) (*int, error) {
 	// @I Consider using hashmaps instead of json values
 	// @I Investigate risk of an Action overriding another due to race conditions
 	//    when creating them
 
 	if storage.client == nil {
-		panic("The Redis client has not been initialized yet.")
+		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
 	// We'll be storing an ActionWrapper which contains the Action type as well.
 	wrapper, err := wrapper.Wrapper(action)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	jsonAction, err := json.Marshal(wrapper)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Generate an ID, store the Action, and update the Actions index set.
@@ -87,14 +87,14 @@ func (storage Redis) Set(action common.Action) int {
 	key := redisKey(_id)
 	err = storage.client.Cmd("SET", key, jsonAction).Err
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	err = storage.client.Cmd("ZADD", "actions", _id, key).Err
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return _id
+	return &_id, nil
 }
 
 // generateID generates an ID for a new Action by incrementing the last known

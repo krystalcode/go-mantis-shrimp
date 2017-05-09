@@ -87,7 +87,10 @@ func v1Create(c *gin.Context) {
 
 	// Store the Action.
 	storage := c.MustGet("storage").(storage.Storage)
-	_id := storage.Set(action)
+	_id, err := storage.Set(action)
+	if err != nil {
+		panic(err)
+	}
 
 	// All good.
 	c.JSON(

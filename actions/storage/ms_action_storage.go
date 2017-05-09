@@ -20,7 +20,7 @@ import (
 // It defines an API for storing and retrieving Action objects.
 type Storage interface {
 	Get(int) (*common.Action, error)
-	Set(common.Action) int
+	Set(common.Action) (*int, error)
 }
 
 // StorageFactory is a function type that should be implemented by all Storage
