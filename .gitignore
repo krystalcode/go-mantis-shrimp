@@ -1,2 +1,3 @@
-# Ignore Glide cache folder.
+# Ignore Glide cache and vendor folder.
 .glide
+/vendor
