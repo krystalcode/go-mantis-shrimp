@@ -7,8 +7,6 @@ package main
 import (
 	// Utilities.
 	"net/http"
-	"strconv"
-	"strings"
 
 	// Gin.
 	gin "gopkg.in/gin-gonic/gin.v1"
@@ -17,6 +15,7 @@ import (
 	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
 	storage "github.com/krystalcode/go-mantis-shrimp/actions/storage"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/actions/wrapper"
+	util "github.com/krystalcode/go-mantis-shrimp/util"
 )
 
 /**
@@ -120,24 +119,15 @@ func v1Trigger(c *gin.Context) {
 	// mistakes, so we do not trigger any Actions if there is any error, even in
 	// one of the IDs.
 	sIDs := c.Param("ids")
-	aIDsString := strings.Split(sIDs, ",")
-
-	aIDsInt := make(map[int]struct{})
-	for _, sID := range aIDsString {
-		iID, err := strconv.Atoi(sID)
-		if err != nil {
-			c.JSON(
-				http.StatusNotFound,
-				gin.H{
-					"status": http.StatusNotFound,
-				},
-			)
-			return
-		}
-
-		if _, ok := aIDsInt[iID]; !ok {
-			aIDsInt[iID] = struct{}{}
-		}
+	aIDsInt, err := util.StringToIntegers(sIDs, ",")
+	if err != nil {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{
+				"status": http.StatusNotFound,
+			},
+		)
+		return
 	}
 
 	// Get the Actions with the requested IDs from storage.

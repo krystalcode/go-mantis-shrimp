@@ -133,7 +133,7 @@ func v1Trigger(c *gin.Context) {
 	// @I Refactor converting a comma-separated list of string IDs to an array of
 	//    integer IDs into a utility function
 	sIDs := c.Param("ids")
-	aIDsInt, err := util.StringToArrayOfIntegers(sIDs, ",")
+	aIDsInt, err := util.StringToIntegers(sIDs, ",")
 	if err != nil {
 		c.JSON(
 			http.StatusNotFound,
