@@ -31,18 +31,18 @@ type Redis struct {
 
 // Get implements Storage.Get(). It retrieves from Storage and returns the Watch
 // for the given ID.
-func (storage Redis) Get(_id int) common.Watch {
+func (storage Redis) Get(_id int) (*common.Watch, error) {
 	// @I Delegate error handling to the caller in Storage API functions
 
 	if storage.client == nil {
-		panic("The Redis client has not been initialized yet.")
+		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
 	key := redisKey(_id)
 
 	r := storage.client.Cmd("GET", key)
 	if r.Err != nil {
-		panic(r.Err)
+		return nil, r.Err
 	}
 
 	jsonWatch, err := r.Bytes()
@@ -51,16 +51,16 @@ func (storage Redis) Get(_id int) common.Watch {
 	// stored, we should see how to handle this later.
 	// @I Handle edge cases when deserializing json in Redis
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	// Create and initialize a Watch object based on the given JSON object.
 	watch, err := wrapper.Create(jsonWatch)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return watch
+	return &watch, nil
 }
 
 // Set implements Storage.Set(). It stores the given Watch object to the Redis

@@ -8,13 +8,14 @@ import (
 	// Utilities.
 	"fmt"
 	"net/http"
-	"strconv"
 
 	// Gin.
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
 	sdk "github.com/krystalcode/go-mantis-shrimp/actions/sdk"
+	util "github.com/krystalcode/go-mantis-shrimp/util"
+	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
 	storage "github.com/krystalcode/go-mantis-shrimp/watches/storage"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
 )
@@ -52,7 +53,7 @@ func main() {
 		v1.POST("/", v1Create)
 
 		// Trigger execution of the Watch via its ID.
-		v1.POST("/:_id/trigger", v1Trigger)
+		v1.POST("/:ids/trigger", v1Trigger)
 	}
 
 	/**
@@ -120,33 +121,18 @@ func v1Trigger(c *gin.Context) {
 	 * @I Does the _id need any escaping?
 	 * @I Ensure the caller has the permissions to trigger evaluation of a Watch
 	 * @I Investigate whether we need our own response status codes
-	 * @I Allow triggering multiple action ids in one request
 	 */
 
-	// The _id parameter is required.
-	_idString := c.Param("_id")
-	if _idString == "" {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"status": http.StatusBadRequest,
-			},
-		)
-		return
-	}
-
-	// IDs are stored in storage as integers.
-	_id, err := strconv.Atoi(_idString)
+	// The "ids" parameter is required. We allow for multiple comma-separated
+	// string IDs, so we need to convert them to an array of integer IDs.
+	// We want to make sure that the caller makes the request they want to without
+	// mistakes, so we do not trigger any Watches if there is any error, even in
+	// one of the IDs.
+	// @I Refactor converting a comma-separated list of string IDs to an array of
+	//    integer IDs into a utility function
+	sIDs := c.Param("ids")
+	aIDsInt, err := util.StringToArrayOfIntegers(sIDs, ",")
 	if err != nil {
-		panic(err)
-	}
-
-	// Get the Watch with the requested ID from storage.
-	storage := c.MustGet("storage").(storage.Storage)
-	watch := storage.Get(_id)
-
-	// Return a Not Found response if there is no Watch with such _id.
-	if watch == nil {
 		c.JSON(
 			http.StatusNotFound,
 			gin.H{
@@ -156,30 +142,57 @@ func v1Trigger(c *gin.Context) {
 		return
 	}
 
-	// Trigger execution of the Watch.
-	// We only need to acknowledge that the Watch was triggered; we don't have to
-	// for the execution to finish as this can take time.
-	go func() {
-		actionsIds := watch.Do()
-		if len(actionsIds) == 0 {
+	// Get the Watches with the requested IDs from storage.
+	storage := c.MustGet("storage").(storage.Storage)
+
+	var watches []*common.Watch
+	for iID, _ := range aIDsInt {
+		watch, err := storage.Get(iID)
+		if err != nil {
+			// Return a Not Found response if there is no Watch with such ID.
+			if watch == nil {
+				c.JSON(
+					http.StatusNotFound,
+					gin.H{
+						"status": http.StatusNotFound,
+					},
+				)
+			}
 			return
 		}
 
-		sdkConfig := sdk.Config{
-			BaseURL: ActionAPIBaseURL,
-			Version: ActionAPIVersion,
-		}
-		// @I Trigger all Watch Actions in one request
-		for _, actionID := range actionsIds {
-			go func() {
-				err := sdk.TriggerByID(actionID, sdkConfig)
-				if err != nil {
-					// @I Investigate log management strategy for all services
-					fmt.Println(err)
-				}
-			}()
-		}
-	}()
+		// We could trigger the Watch at this point, however we prefer to check
+		// that all Watches exist first.
+		watches = append(watches, watch)
+	}
+
+	// Trigger execution of the Watches.
+	// We only need to acknowledge that the Watches were triggered; we don't have to
+	// for the execution to finish as this can take time.
+	for _, pointer := range watches {
+		go func() {
+			watch := *pointer
+			actionsIds := watch.Do()
+			if len(actionsIds) == 0 {
+				return
+			}
+
+			sdkConfig := sdk.Config{
+				BaseURL: ActionAPIBaseURL,
+				Version: ActionAPIVersion,
+			}
+			// @I Trigger all Watch Actions in one request
+			for _, actionID := range actionsIds {
+				go func() {
+					err := sdk.TriggerByID(actionID, sdkConfig)
+					if err != nil {
+						// @I Investigate log management strategy for all services
+						fmt.Println(err)
+					}
+				}()
+			}
+		}()
+	}
 
 	// All good.
 	c.JSON(
