@@ -21,9 +21,9 @@ type Config struct {
 
 // TriggerByID makes a POST request that triggers the Action that corresponds to
 // the given ID.
-func TriggerByID(_id int, config Config) error {
+func TriggerByID(id int, config Config) error {
 	// Prepare the URL and the request body.
-	idString := strconv.Itoa(_id)
+	idString := strconv.Itoa(id)
 	url := config.BaseURL + "/v" + config.Version + "/" + idString + "/trigger"
 	body := []byte{}
 

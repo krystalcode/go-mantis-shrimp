@@ -31,12 +31,12 @@ type Redis struct {
 
 // Get implements Storage.Get(). It retrieves from Storage and returns the
 // Action for the given ID.
-func (storage Redis) Get(_id int) (*common.Action, error) {
+func (storage Redis) Get(id int) (*common.Action, error) {
 	if storage.client == nil {
 		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
-	key := redisKey(_id)
+	key := redisKey(id)
 
 	r := storage.client.Cmd("GET", key)
 	if r.Err != nil {
@@ -83,18 +83,18 @@ func (storage Redis) Set(action common.Action) (*int, error) {
 	}
 
 	// Generate an ID, store the Action, and update the Actions index set.
-	_id := storage.generateID()
-	key := redisKey(_id)
+	id := storage.generateID()
+	key := redisKey(id)
 	err = storage.client.Cmd("SET", key, jsonAction).Err
 	if err != nil {
 		return nil, err
 	}
-	err = storage.client.Cmd("ZADD", "actions", _id, key).Err
+	err = storage.client.Cmd("ZADD", "actions", id, key).Err
 	if err != nil {
 		return nil, err
 	}
 
-	return &_id, nil
+	return &id, nil
 }
 
 // generateID generates an ID for a new Action by incrementing the last known
@@ -112,12 +112,12 @@ func (storage Redis) generateID() int {
 		return 1
 	}
 
-	_id, err := strconv.Atoi(r[1])
+	id, err := strconv.Atoi(r[1])
 	if err != nil {
 		panic(err)
 	}
 
-	return _id + 1
+	return id + 1
 }
 
 // NewRedisStorage implements the StorageFactory function type. It initiates a
@@ -152,6 +152,6 @@ var NewRedisStorage = func(config map[string]string) (Storage, error) {
  */
 
 // Generate a Redis key for the given Action ID.
-func redisKey(_id int) string {
-	return "action:" + strconv.Itoa(_id)
+func redisKey(id int) string {
+	return "action:" + strconv.Itoa(id)
 }
