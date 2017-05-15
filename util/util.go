@@ -16,7 +16,7 @@ func StringToIntegers(input string, delimiter string) (map[int]struct{}, error) 
 	aInt := make(map[int]struct{})
 
 	for _, s := range aString {
-		i, err := strconv.Atoi(s)
+		i, err := strconv.Atoi(strings.Trim(s, " "))
 		if err != nil {
 			return nil, err
 		}
