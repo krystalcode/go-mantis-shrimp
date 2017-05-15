@@ -20,7 +20,7 @@ import (
 // It defines an API for storing and retrieving Watch objects.
 type Storage interface {
 	Get(int) (*common.Watch, error)
-	Set(common.Watch) int
+	Set(common.Watch) (*int, error)
 }
 
 // StorageFactory is a function type that should be implemented by all Storage

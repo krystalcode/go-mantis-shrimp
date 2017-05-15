@@ -101,7 +101,10 @@ func v1Create(c *gin.Context) {
 	// Store the Watch.
 	// @I Remove underscores from all _id variables
 	storage := c.MustGet("storage").(storage.Storage)
-	_id := storage.Set(watch)
+	_id, err := storage.Set(watch)
+	if err != nil {
+		panic(err)
+	}
 
 	// All good.
 	c.JSON(

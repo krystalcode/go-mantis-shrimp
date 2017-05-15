@@ -65,23 +65,23 @@ func (storage Redis) Get(_id int) (*common.Watch, error) {
 
 // Set implements Storage.Set(). It stores the given Watch object to the Redis
 // Storage.
-func (storage Redis) Set(watch common.Watch) int {
+func (storage Redis) Set(watch common.Watch) (*int, error) {
 	// @I Consider using hashmaps instead of json values
 	// @I Investigate risk of a Watch overriding another due to race conditions when
 	//    creating them
 
 	if storage.client == nil {
-		panic("The Redis client has not been initialized yet.")
+		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
 	// We'll be storing a WatchWrapper which contains the Watch type as well.
 	wrapper, err := wrapper.Wrapper(watch)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	jsonWatch, err := json.Marshal(wrapper)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Generate an ID, store the Watch, and update the Watches index set.
@@ -89,14 +89,14 @@ func (storage Redis) Set(watch common.Watch) int {
 	key := redisKey(_id)
 	err = storage.client.Cmd("SET", key, jsonWatch).Err
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	err = storage.client.Cmd("ZADD", "watches", _id, key).Err
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return _id
+	return &_id, err
 }
 
 // generateID generates an ID for a new Watch by incrementing the last known
