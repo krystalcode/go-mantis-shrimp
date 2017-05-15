@@ -31,14 +31,14 @@ type Redis struct {
 
 // Get implements Storage.Get(). It retrieves from Storage and returns the Watch
 // for the given ID.
-func (storage Redis) Get(_id int) (*common.Watch, error) {
+func (storage Redis) Get(id int) (*common.Watch, error) {
 	// @I Delegate error handling to the caller in Storage API functions
 
 	if storage.client == nil {
 		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
-	key := redisKey(_id)
+	key := redisKey(id)
 
 	r := storage.client.Cmd("GET", key)
 	if r.Err != nil {
@@ -85,18 +85,18 @@ func (storage Redis) Set(watch common.Watch) (*int, error) {
 	}
 
 	// Generate an ID, store the Watch, and update the Watches index set.
-	_id := storage.generateID()
-	key := redisKey(_id)
+	id := storage.generateID()
+	key := redisKey(id)
 	err = storage.client.Cmd("SET", key, jsonWatch).Err
 	if err != nil {
 		return nil, err
 	}
-	err = storage.client.Cmd("ZADD", "watches", _id, key).Err
+	err = storage.client.Cmd("ZADD", "watches", id, key).Err
 	if err != nil {
 		return nil, err
 	}
 
-	return &_id, err
+	return &id, err
 }
 
 // generateID generates an ID for a new Watch by incrementing the last known
@@ -114,12 +114,12 @@ func (storage Redis) generateID() int {
 		return 1
 	}
 
-	_id, err := strconv.Atoi(r[1])
+	id, err := strconv.Atoi(r[1])
 	if err != nil {
 		panic(err)
 	}
 
-	return _id + 1
+	return id + 1
 }
 
 // NewRedisStorage implements the StorageFactory function type. It initiates a
@@ -154,6 +154,6 @@ var NewRedisStorage = func(config map[string]string) (Storage, error) {
  */
 
 // Generate a Redis key for the given Watch ID.
-func redisKey(_id int) string {
-	return "watch:" + strconv.Itoa(_id)
+func redisKey(id int) string {
+	return "watch:" + strconv.Itoa(id)
 }

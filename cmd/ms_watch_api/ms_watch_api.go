@@ -99,9 +99,8 @@ func v1Create(c *gin.Context) {
 	watch := wrapper.Watch
 
 	// Store the Watch.
-	// @I Remove underscores from all _id variables
 	storage := c.MustGet("storage").(storage.Storage)
-	_id, err := storage.Set(watch)
+	id, err := storage.Set(watch)
 	if err != nil {
 		panic(err)
 	}
@@ -111,7 +110,7 @@ func v1Create(c *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"status": http.StatusOK,
-			"_id":    _id,
+			"id":     id,
 		},
 	)
 }
@@ -121,7 +120,7 @@ func v1Create(c *gin.Context) {
 func v1Trigger(c *gin.Context) {
 	/**
 	 * @I Implement authentication of the caller
-	 * @I Does the _id need any escaping?
+	 * @I Does the id need any escaping?
 	 * @I Ensure the caller has the permissions to trigger evaluation of a Watch
 	 * @I Investigate whether we need our own response status codes
 	 */

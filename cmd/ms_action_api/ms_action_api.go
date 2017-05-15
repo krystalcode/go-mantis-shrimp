@@ -87,7 +87,7 @@ func v1Create(c *gin.Context) {
 
 	// Store the Action.
 	storage := c.MustGet("storage").(storage.Storage)
-	_id, err := storage.Set(action)
+	id, err := storage.Set(action)
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +97,7 @@ func v1Create(c *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"status": http.StatusOK,
-			"_id":    _id,
+			"id":     id,
 		},
 	)
 }
@@ -107,7 +107,7 @@ func v1Create(c *gin.Context) {
 func v1Trigger(c *gin.Context) {
 	/**
 	 * @I Implement authentication of the caller
-	 * @I Does the _id need any escaping?
+	 * @I Does the id need any escaping?
 	 * @I Ensure the caller has the permissions to trigger actions
 	 * @I Consider allowing the caller to pass on the actions as well for being
 	 *    able to avoid the extra database call
