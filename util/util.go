@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// StringToArrayOfIntegers converts an input of comma-separated string values to
+// StringToIntegers converts an input of comma-separated string values to
 // a map where the keys are the input values converted to integers. We return
 // them as the keys to keep the algorithm more efficient. Since we will be
 // iterating the result with a "for" loop, it does not make any difference
