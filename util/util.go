@@ -2,6 +2,8 @@ package msUtil
 
 import (
 	// Utilities.
+	"encoding/json"
+	"io/ioutil"
 	"strconv"
 	"strings"
 )
@@ -27,4 +29,20 @@ func StringToIntegers(input string, delimiter string) (map[int]struct{}, error) 
 	}
 
 	return aInt, nil
+}
+
+// ReadJSONFile loads a file containing JSON data into the given struct pointer.
+// Note that the compiler cannot check whether the provided value is a pointer
+// and not giving a pointer to a struct will throw a runtime error.
+func ReadJSONFile(filepath string, object interface{}) error {
+	bytes, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bytes, object)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

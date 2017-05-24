@@ -168,24 +168,23 @@ func (storage Redis) Search(pollInterval time.Duration) ([]*schedule.Schedule, e
 // NewRedisStorage implements the StorageFactory function type. It initiates a
 // connection to the Redis database defined in the given configuration, and it
 // returns the Storage engine object.
-var NewRedisStorage = func(config map[string]string) (Storage, error) {
-	dsn, ok := config["STORAGE_REDIS_DSN"]
+var NewRedisStorage = func(config map[string]interface{}) (Storage, error) {
+	dsn, ok := config["dsn"]
 	if !ok {
-		err := fmt.Errorf(
-			"the \"%s\" configuration option is required for the Redis storage",
-			"STORAGE_REDIS_DSN",
-		)
+		err := fmt.Errorf("the DSN configuration option is required for the Redis storage")
 		return nil, err
 	}
 
-	client, err := redis.Dial("tcp", dsn)
+	sDSN := dsn.(string)
+
+	client, err := redis.Dial("tcp", sDSN)
 	if err != nil {
 		err := fmt.Errorf("failed to connect to Redis: %s", err.Error())
 		return nil, err
 	}
 
 	storage := Redis{
-		dsn:    dsn,
+		dsn:    sDSN,
 		client: client,
 	}
 

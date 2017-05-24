@@ -2,29 +2,44 @@ package main
 
 import (
 	// Utilities.
+	"fmt"
 	"net/http"
 
 	// Gin
 	gin "gopkg.in/gin-gonic/gin.v1"
 
 	// Internal dependencies.
+	config "github.com/krystalcode/go-mantis-shrimp/cron/config"
 	schedule "github.com/krystalcode/go-mantis-shrimp/cron/schedule"
 	storage "github.com/krystalcode/go-mantis-shrimp/cron/storage"
+	util "github.com/krystalcode/go-mantis-shrimp/util"
 )
+
+/**
+ * Constants.
+ */
+
+// CronConfigFile holds the full path to the file containing the configuration
+// for the Cron component.
+const CronConfigFile = "/etc/mantis-shrimp/cron.config.json"
 
 /**
  * Main program entry.
  */
 func main() {
+	// Load configuration.
+	// @I Support providing configuration file for Cron component via cli options
+	// @I Validate Cron component configuration when loading from JSON file
+	var cronConfig config.Config
+	err := util.ReadJSONFile(CronConfigFile, &cronConfig)
+	if err != nil {
+		panic(err)
+	}
+
 	router := gin.Default()
 
 	// Make storage available to the controllers.
-	// @I Load storage configuration from file or cli options
-	config := map[string]string{
-		"STORAGE_ENGINE":    "redis",
-		"STORAGE_REDIS_DSN": "redis:6379",
-	}
-	router.Use(Storage(config))
+	router.Use(Storage(cronConfig.Storage))
 
 	// Version 1 of the Cron API.
 	v1 := router.Group("/v1")
@@ -84,7 +99,7 @@ func v1Create(c *gin.Context) {
 
 // Storage is a Gin middleware that makes available the Storage engine to the
 // endpoint controllers.
-func Storage(config map[string]string) gin.HandlerFunc {
+func Storage(config map[string]interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		storage, err := storage.Create(config)
 		if err != nil {
