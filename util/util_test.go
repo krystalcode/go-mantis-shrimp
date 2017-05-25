@@ -26,7 +26,7 @@ func TestStringToIntegers_Success(t *testing.T) {
 	aIDsIntDesired[2] = struct{}{}
 	aIDsIntDesired[3] = struct{}{}
 
-	aIDsIntResult, err  := StringToIntegers(sIDs, ",")
+	aIDsIntResult, err := StringToIntegers(sIDs, ",")
 
 	// There shouldn't be any errors while converting to integers.
 	assert.Nil(t, err)
@@ -37,7 +37,7 @@ func TestStringToIntegers_Success(t *testing.T) {
 
 func TestStringToIntegers_ContainsString(t *testing.T) {
 	sIDs := "1, 2,h "
-	aIDsIntResult, err  := StringToIntegers(sIDs, ",")
+	aIDsIntResult, err := StringToIntegers(sIDs, ",")
 
 	// There should be an errors while converting to integers, while the result
 	// should be nil.
