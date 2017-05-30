@@ -2,7 +2,7 @@
  * Provides a type that holds the configuration for the Cron component.
  */
 
-package msWatchConfig
+package msCronConfig
 
 import (
 	// Internal dependencies.

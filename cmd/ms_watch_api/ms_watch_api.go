@@ -16,6 +16,7 @@ import (
 	sdk "github.com/krystalcode/go-mantis-shrimp/actions/sdk"
 	util "github.com/krystalcode/go-mantis-shrimp/util"
 	common "github.com/krystalcode/go-mantis-shrimp/watches/common"
+	config "github.com/krystalcode/go-mantis-shrimp/watches/config"
 	storage "github.com/krystalcode/go-mantis-shrimp/watches/storage"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/watches/wrapper"
 )
@@ -24,27 +25,30 @@ import (
  * Constants.
  */
 
-// @I Make the Action API base url configurable
-
-// ActionAPIBaseURL holds the base url where the Action API should be contacted.
-const ActionAPIBaseURL = "http://ms-action-api:8888"
-
-// ActionAPIVersion holds the version of the Action API that client calls use.
-const ActionAPIVersion = "1"
+// WatchAPIConfigFile holds the default path to the file containing the
+// configuration for the Watch API.
+const WatchAPIConfigFile = "/etc/mantis-shrimp/watch_api.config.json"
 
 /**
  * Main program entry.
  */
 func main() {
+	// Load configuration.
+	// @I Support providing configuration file for Watch API via cli options
+	// @I Validate Watch API configuration when loading from JSON file
+	var watchAPIConfig config.Config
+	err := util.ReadJSONFile(WatchAPIConfigFile, &watchAPIConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	// Load Watches provided in the config, if we run on ephemeral storage mode.
+	loadEphemeralWatches(&watchAPIConfig)
+
 	router := gin.Default()
 
 	// Make storage available to the controllers.
-	// @I Load storage configuration from file or cli options
-	config := map[string]string{
-		"STORAGE_ENGINE":    "redis",
-		"STORAGE_REDIS_DSN": "redis:6379",
-	}
-	router.Use(Storage(config))
+	router.Use(Storage(watchAPIConfig.Storage))
 
 	// Version 1 of the Watch API.
 	v1 := router.Group("/v1")
@@ -171,6 +175,11 @@ func v1Trigger(c *gin.Context) {
 	// Trigger execution of the Watches.
 	// We only need to acknowledge that the Watches were triggered; we don't have to
 	// for the execution to finish as this can take time.
+	watchAPIConfig := c.MustGet("config").(config.Config)
+	sdkConfig := sdk.Config{
+		watchAPIConfig.ActionAPI.BaseURL,
+		watchAPIConfig.ActionAPI.Version,
+	}
 	for _, pointer := range watches {
 		go func() {
 			watch := *pointer
@@ -179,10 +188,6 @@ func v1Trigger(c *gin.Context) {
 				return
 			}
 
-			sdkConfig := sdk.Config{
-				BaseURL: ActionAPIBaseURL,
-				Version: ActionAPIVersion,
-			}
 			// @I Trigger all Watch Actions in one request
 			for _, actionID := range actionsIds {
 				go func() {
@@ -211,7 +216,7 @@ func v1Trigger(c *gin.Context) {
 
 // Storage is a Gin middleware that makes available the Storage engine to the
 // endpoint controllers.
-func Storage(config map[string]string) gin.HandlerFunc {
+func Storage(config map[string]interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		storage, err := storage.Create(config)
 		if err != nil {
@@ -219,5 +224,42 @@ func Storage(config map[string]string) gin.HandlerFunc {
 		}
 		c.Set("storage", storage)
 		c.Next()
+	}
+}
+
+// Config is a Gin middleware that makes available the Watch API configuration
+// to the endpoint controllers.
+func Config(watchAPIConfig *config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("config", *watchAPIConfig)
+		c.Next()
+	}
+}
+
+/**
+ * Functions/types for internal use.
+ */
+
+// loadEphmeralWatches checks if the storage engine is configured to run in
+// "ephemeral" mode, and if so, it loads into it any Watches contained in the
+// configuration file.
+func loadEphemeralWatches(watchAPIConfig *config.Config) {
+	// @I Load init Watches directly in Redis via a script so that services
+	//    don't have to be restarted together
+	mode, ok := watchAPIConfig.Storage["mode"]
+	if !ok || mode.(string) != "ephemeral" || watchAPIConfig.WatchWrappers == nil {
+		return
+	}
+
+	storage, err := storage.Create(watchAPIConfig.Storage)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, wrapper := range watchAPIConfig.WatchWrappers {
+		_, err := storage.Set(wrapper.Watch)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

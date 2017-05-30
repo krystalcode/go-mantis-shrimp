@@ -28,11 +28,11 @@ type Storage interface {
 // configuration as a map, and it returns the Storage engine object. The
 // configuration should include the requested engine keyed "STORAGE_ENGINE" plus
 // any configuration required by the engine itself.
-type StorageFactory func(confing map[string]string) (Storage, error)
+type StorageFactory func(confing map[string]interface{}) (Storage, error)
 
 // Create creates and returns a Storage provider, given the configuration that
 // includes configuration required by the provider.
-func Create(config map[string]string) (Storage, error) {
+func Create(config map[string]interface{}) (Storage, error) {
 	// Register providers the first time we create a storage. We may create a more
 	// generic registration mechanism when we support more storage providers that
 	// may also be registered independently, but for now this is sufficient.
@@ -40,19 +40,30 @@ func Create(config map[string]string) (Storage, error) {
 		storageFactories["redis"] = NewRedisStorage
 	}
 
-	engine, ok := config["STORAGE_ENGINE"]
+	storageType, ok := config["type"]
 	if !ok {
+		err := fmt.Errorf("the \"type\" configuration option is required for defining the storage engine")
+		return nil, err
+	}
+
+	sStorageType := storageType.(string)
+	if sStorageType == "" {
 		err := fmt.Errorf("no storage engine provided")
-		panic(err)
+		return nil, err
 	}
 
-	factory, ok := storageFactories[engine]
+	factory, ok := storageFactories[sStorageType]
 	if !ok {
-		err := fmt.Errorf("unknown storage engine \"%s\"", engine)
-		panic(err)
+		err := fmt.Errorf("unknown storage engine \"%s\"", sStorageType)
+		return nil, err
 	}
 
-	return factory(config)
+	storage, err := factory(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return storage, nil
 }
 
 /**
