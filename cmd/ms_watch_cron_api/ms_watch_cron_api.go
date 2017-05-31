@@ -18,8 +18,8 @@ import (
  * Constants.
  */
 
-// CronConfigFile holds the full path to the file containing the configuration
-// for the Cron component.
+// CronConfigFile holds the default path to the file containing the
+// configuration for the Cron component.
 const CronConfigFile = "/etc/mantis-shrimp/cron.config.json"
 
 /**
