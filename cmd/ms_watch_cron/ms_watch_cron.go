@@ -64,7 +64,7 @@ func main() {
 
 	// Configuration required by the Watch API SDK.
 	// @I Load Watch API SDK configuration from file or command line
-	config := sdk.Config{
+	sdkConfig := sdk.Config{
 		cronConfig.WatchAPI.BaseURL,
 		cronConfig.WatchAPI.Version,
 	}
@@ -73,7 +73,7 @@ func main() {
 	// as they come. We keep the channel open and the program stays on perpetual.
 	for watchID := range triggers {
 		fmt.Printf("triggering Watch with ID \"%d\"\n", watchID)
-		err := sdk.TriggerByID(watchID, config)
+		err := sdk.TriggerByID(watchID, sdkConfig)
 		if err != nil {
 			fmt.Println(err)
 		}
