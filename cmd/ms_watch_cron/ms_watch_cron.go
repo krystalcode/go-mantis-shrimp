@@ -144,7 +144,7 @@ func run(schedule schedule.Schedule, triggers chan<- int, cronConfig *config.Con
 	}
 }
 
-// loadSchedules checks if the storage engine is configured to run in
+// loadEphemeralSchedules checks if the storage engine is configured to run in
 // "ephemeral" mode, and if so, it loads into it any Schedules contained in the
 // configuration file.
 func loadEphemeralSchedules(cronConfig *config.Config) {
