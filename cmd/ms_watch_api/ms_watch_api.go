@@ -104,7 +104,7 @@ func v1Create(c *gin.Context) {
 
 	// Store the Watch.
 	storage := c.MustGet("storage").(storage.Storage)
-	id, err := storage.Set(watch)
+	id, err := storage.Create(&watch)
 	if err != nil {
 		panic(err)
 	}
@@ -114,7 +114,7 @@ func v1Create(c *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"status": http.StatusOK,
-			"id":     id,
+			"id":     *id,
 		},
 	)
 }
@@ -257,7 +257,7 @@ func loadEphemeralWatches(watchAPIConfig *config.Config) {
 	}
 
 	for _, wrapper := range watchAPIConfig.WatchWrappers {
-		_, err := storage.Set(wrapper.Watch)
+		_, err := storage.Create(&wrapper.Watch)
 		if err != nil {
 			panic(err)
 		}

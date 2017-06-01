@@ -19,8 +19,9 @@ import (
 // Storage is an interface that should be implemented by all Storage engines.
 // It defines an API for storing and retrieving Watch objects.
 type Storage interface {
+	Create(*common.Watch) (*int, error)
 	Get(int) (*common.Watch, error)
-	Set(common.Watch) (*int, error)
+	Update(int, *common.Watch) error
 }
 
 // StorageFactory is a function type that should be implemented by all Storage

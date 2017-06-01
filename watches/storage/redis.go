@@ -29,6 +29,23 @@ type Redis struct {
 	client *redis.Client
 }
 
+// Create implements Storage.Create(). It stores the given Watch object as a new
+// value in the Redis Storage and it returns an automatically generated ID.
+func (storage Redis) Create(watchPointer *common.Watch) (*int, error) {
+	// Generate an ID and store the Watch.
+	watchID, err := storage.generateID()
+	if err != nil {
+		return nil, err
+	}
+
+	err = storage.set(*watchID, watchPointer)
+	if err != nil {
+		return nil, err
+	}
+
+	return watchID, nil
+}
+
 // Get implements Storage.Get(). It retrieves from Storage and returns the Watch
 // for the given ID.
 func (storage Redis) Get(id int) (*common.Watch, error) {
@@ -63,10 +80,50 @@ func (storage Redis) Get(id int) (*common.Watch, error) {
 	return &watch, nil
 }
 
-// Set implements Storage.Set(). It stores the given Watch object to the Redis
-// Storage.
-func (storage Redis) Set(watch common.Watch) (*int, error) {
-	// @I Consider using hashmaps instead of json values
+// Update implements Storage.Update(). It stores the given Watch object as a
+// value in the Redis Storage, overriding the existing value with the given ID.
+func (storage Redis) Update(watchID int, watchPointer *common.Watch) error {
+	return storage.set(watchID, watchPointer)
+}
+
+// set stores a Watch object as a Redis value at the key corresponding to the
+// given ID.
+func (storage Redis) set(watchID int, watchPointer *common.Watch) error {
+	// @I Consider using hashmaps instead of json values when storing Watches
+
+	if storage.client == nil {
+		return fmt.Errorf("the Redis client has not been initialized yet")
+	}
+
+	// We'll be storing a WatchWrapper which contains the Watch type as well.
+	watch := *watchPointer
+	wrapper, err := wrapper.Wrapper(watch)
+	if err != nil {
+		return err
+	}
+	jsonWatch, err := json.Marshal(wrapper)
+	if err != nil {
+		return err
+	}
+
+	// Store the Watch, and update the Watches index set.
+	key := redisKey(watchID)
+	err = storage.client.Cmd("SET", key, jsonWatch).Err
+	if err != nil {
+		return err
+	}
+	// @I Add the Watch's ID to the index only when creating it
+	err = storage.client.Cmd("ZADD", "watches", watchID, key).Err
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// generateID generates an ID for a new Watch by incrementing the last known
+// Watch ID.
+func (storage Redis) generateID() (*int, error) {
 	// @I Investigate risk of a Watch overriding another due to race conditions when
 	//    creating them
 
@@ -74,52 +131,26 @@ func (storage Redis) Set(watch common.Watch) (*int, error) {
 		return nil, fmt.Errorf("the Redis client has not been initialized yet")
 	}
 
-	// We'll be storing a WatchWrapper which contains the Watch type as well.
-	wrapper, err := wrapper.Wrapper(watch)
-	if err != nil {
-		return nil, err
-	}
-	jsonWatch, err := json.Marshal(wrapper)
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate an ID, store the Watch, and update the Watches index set.
-	id := storage.generateID()
-	key := redisKey(id)
-	err = storage.client.Cmd("SET", key, jsonWatch).Err
-	if err != nil {
-		return nil, err
-	}
-	err = storage.client.Cmd("ZADD", "watches", id, key).Err
-	if err != nil {
-		return nil, err
-	}
-
-	return &id, err
-}
-
-// generateID generates an ID for a new Watch by incrementing the last known
-// Watch ID.
-func (storage Redis) generateID() int {
 	// Get the last ID that exists on the Watches index set, so that we can generate
 	// the next one.
 	r, err := storage.client.Cmd("ZREVRANGE", "watches", 0, 0, "WITHSCORES").List()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// If there are no watches yet, start with ID 1.
+	// If there are no Watches yet, start with ID 1.
 	if len(r) == 0 {
-		return 1
+		newWatchID := 1
+		return &newWatchID, nil
 	}
 
-	id, err := strconv.Atoi(r[1])
+	latestWatchID, err := strconv.Atoi(r[1])
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return id + 1
+	newWatchID := latestWatchID + 1
+	return &newWatchID, nil
 }
 
 // NewRedisStorage implements the StorageFactory function type. It initiates a
