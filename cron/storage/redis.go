@@ -58,7 +58,7 @@ type Redis struct {
 }
 
 // Create implements Storage.Create(). It stores the given Schedule object as a
-// new Hash in the Redis Storage.
+// new Hash in the Redis Storage and it returns an automatically generated ID.
 func (storage Redis) Create(schedule *schedule.Schedule) (*int, error) {
 	// Generate an ID and store the Schedule.
 	scheduleID, err := storage.generateID()
