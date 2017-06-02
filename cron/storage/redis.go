@@ -217,6 +217,7 @@ func (storage Redis) set(scheduleID int, schedule *schedule.Schedule) error {
 	}
 
 	// Set the ID in the corresponding index.
+	// @I Add the Schedule's ID to the index only when creating it
 	err = storage.client.Cmd("ZADD", redisScheduleIDIndex, scheduleID, key).Err
 	if err != nil {
 		return err
