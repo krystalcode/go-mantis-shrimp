@@ -13,24 +13,40 @@ import (
 
 	// Internal dependencies.
 	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
+	config "github.com/krystalcode/go-mantis-shrimp/actions/config"
 	storage "github.com/krystalcode/go-mantis-shrimp/actions/storage"
 	wrapper "github.com/krystalcode/go-mantis-shrimp/actions/wrapper"
 	util "github.com/krystalcode/go-mantis-shrimp/util"
 )
 
 /**
+ * Constants.
+ */
+
+// ActionAPIConfigFile holds the default path to the file containing the
+// configuration for the Action API.
+const ActionAPIConfigFile = "/etc/mantis-shrimp/action_api.config.json"
+
+/**
  * Main program entry.
  */
 func main() {
+	// Load configuration.
+	// @I Support providing configuration file for Action API via cli options
+	// @I Validate Action API configuration when loading from JSON file
+	var actionAPIConfig config.Config
+	err := util.ReadJSONFile(ActionAPIConfigFile, &actionAPIConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	// Load Actions provided in the config, if we run on ephemeral storage mode.
+	loadEphemeralActions(&actionAPIConfig)
+
 	router := gin.Default()
 
 	// Make storage available to the controllers.
-	// @I Load storage configuration from file or cli options
-	config := map[string]string{
-		"STORAGE_ENGINE":    "redis",
-		"STORAGE_REDIS_DSN": "redis:6379",
-	}
-	router.Use(Storage(config))
+	router.Use(Storage(actionAPIConfig.Storage))
 
 	// Version 1 of the Action API.
 	v1 := router.Group("/v1")
@@ -181,7 +197,7 @@ func v1Trigger(c *gin.Context) {
 
 // Storage is a Gin middleware that makes available the Storage engine to the
 // endpoint controllers.
-func Storage(config map[string]string) gin.HandlerFunc {
+func Storage(config map[string]interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		storage, err := storage.Create(config)
 		if err != nil {
@@ -189,5 +205,33 @@ func Storage(config map[string]string) gin.HandlerFunc {
 		}
 		c.Set("storage", storage)
 		c.Next()
+	}
+}
+
+/**
+ * Functions/types for internal use.
+ */
+
+// loadEphmeralActions checks if the storage engine is configured to run in
+// "ephemeral" mode, and if so, it loads into it any Actions contained in the
+// configuration file.
+func loadEphemeralActions(actionAPIConfig *config.Config) {
+	// @I Load init Actions directly in Redis via a script so that services don't
+	//    have to be restarted together
+	mode, ok := actionAPIConfig.Storage["mode"]
+	if !ok || mode.(string) != "ephemeral" || actionAPIConfig.ActionWrappers == nil {
+		return
+	}
+
+	storage, err := storage.Create(actionAPIConfig.Storage)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, wrapper := range actionAPIConfig.ActionWrappers {
+		_, err := storage.Set(wrapper.Action)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
