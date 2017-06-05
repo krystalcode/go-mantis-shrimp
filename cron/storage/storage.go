@@ -20,7 +20,6 @@ import (
 // Storage is an interface that should be implemented by all Storage engines.
 // It defines an API for storing and retrieving Schedule objects.
 type Storage interface {
-	// @I Split Storage API Set function into a Create and an Update function
 	// @I Implement Delete function in the Storage API
 
 	Create(*schedule.Schedule) (*int, error)
