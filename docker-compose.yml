@@ -109,8 +109,6 @@ services:
     image: redis:alpine
 
     # Run.
-    command: redis-server --appendonly yes
-
     container_name: ms_redis
 
     # Configure.
