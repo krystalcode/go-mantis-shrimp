@@ -4,6 +4,7 @@ package msActionCommon
 // It simply defines a Do() function that does whatever the Action is meant to
 // do.
 type Action interface {
+	// @I Action.Do() functions should return errors
 	Do()
 }
 
