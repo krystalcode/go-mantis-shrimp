@@ -1,0 +1,28 @@
+{
+  "action_api" : {
+    "base_url" : "http://ms-action-api:8888",
+    "version"  : "1"
+  },
+  "storage" : {
+    "type" : "redis",
+    "dsn"  : "redis:6379",
+    "mode" : "ephemeral"
+  },
+  "watches" : [
+    {
+      "type" : "health_check",
+      "watch" : {
+        "name" : "Check GitHub status",
+        "url" : "https://github.com/",
+        "statuses" : [200],
+        "timeout" : 30000000,
+        "conditions" : [
+          {
+            "type" : "failure"
+          }
+        ],
+        "actions_ids" : [ 1 ]
+      }
+    }
+  ]
+}

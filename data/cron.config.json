@@ -1,0 +1,22 @@
+{
+  "watch_api" : {
+    "base_url" : "http://ms-watch-api:8888",
+    "version"  : "1"
+  },
+  "search_interval" : "1s",
+  "storage" : {
+    "type" : "redis",
+    "dsn"  : "redis:6379",
+    "mode" : "ephemeral"
+  },
+  "schedules" : [
+    {
+      "type"        : "cron",
+      "interval"    : 10000000000,
+      "start"       : "2017-04-12T00:00:00Z",
+      "stop"        : "2017-05-12T00:00:00Z",
+      "watches_ids" : [1],
+      "enabled"     : true
+    }
+  ]
+}

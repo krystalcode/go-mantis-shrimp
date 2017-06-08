@@ -1,0 +1,49 @@
+{
+  "storage" : {
+    "type" : "redis",
+    "dsn"  : "redis:6379",
+    "mode" : "ephemeral"
+  },
+  "actions" : [
+    {
+      "type" : "chat_message",
+      "action" : {
+        "name" : "Generic chat message",
+        "url" : "http://chat:3000/hooks/kFQCMu8tSGfCQw9i4/YpzBK9Y3eDHCDBf4wABKTwNjkd7hrLtGofPNGXzYJjuX3rKq",
+        "message" : {
+          "text" : "There is an update available for the chat",
+          "alias" : "mantis-shrimp",
+          "emoji" : ":smirk:",
+          "attachments" : [
+            {
+              "color" : "gold",
+              "text" : "Mantis shrimps, or stomatopods, are marine crustaceans of the order Stomatopoda. They branched from other members of the class Malacostraca around 400 Mya.[2] Mantis shrimps typically grow to around 10 centimetres (3.9 in) in length. A few can reach up to 38 cm (15 in).[3] The largest mantis shrimp ever caught had a length of 46 cm (18 in) and was caught in the Indian River near Fort Pierce, Florida, in the United States.[4] A mantis shrimp's carapace (the bony, thick shell that covers crustaceans and some other species) covers only the rear part of the head and the first four segments of the thorax. Varieties range from shades of brown to vivid colours, as there are more than 450 species of mantis shrimp. They are among the most important predators in many shallow, tropical, and sub-tropical marine habitats. However, despite being common, they are poorly understood as many species spend most of their life tucked away in burrows and holes.",
+              "ts" : "2016-12-09T16:53:06.761Z",
+              "thumb_url" : "https://c2.staticflickr.com/6/5484/10763614826_21f63a6ee3_m.jpg",
+              "message_link" : "https://github.com/krystalcode/go-mantis-shrimp",
+              "collapsed" : false,
+              "author_name" : "Krystalcode",
+              "author_link" : "https://github.com/krystalcode",
+              "author_icon" : "https://avatars0.githubusercontent.com/u/301364?v=3&s=60",
+              "title" : "About the Mantis Shrimp | Wikipedia",
+              "title_link" : "https://en.wikipedia.org/wiki/Mantis_shrimp",
+              "image_url" : "https://c1.staticflickr.com/1/182/382415066_8217100b21_z.jpg",
+              "fields" : [
+                {
+                  "short" : true,
+                  "title" : "Status",
+                  "value" : "online"
+                },
+                {
+                  "short" : true,
+                  "title" : "Status",
+                  "value" : "offline"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
