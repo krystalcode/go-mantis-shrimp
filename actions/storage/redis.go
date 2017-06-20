@@ -22,11 +22,18 @@ import (
  * Redis storage provider.
  */
 
+// RedisClient is an interface that is used to allow dependency injection of the
+// Redis client that makes the requests to the Redis datastore. Dependency
+// injection is necessary for testing purposes.
+type RedisClient interface {
+	Cmd(string, ...interface{}) *redis.Resp
+}
+
 // Redis implements the Storage interface, allowing to use Redis as a Storage
 // engine.
 type Redis struct {
 	dsn    string
-	client *redis.Client
+	client RedisClient
 }
 
 // Get implements Storage.Get(). It retrieves from Storage and returns the

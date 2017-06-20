@@ -58,6 +58,20 @@ type Action struct {
 	httpClient HTTPClient
 }
 
+// NewAction is a constructor function that makes it easy to create new Chat
+// Message Actions. Note that it does not set the HTTP client - this has to be
+// done with the corresponding setter function.
+func NewAction(name string, URL string, message Message) *Action {
+	return &Action{
+		common.ActionBase{
+			Name : name,
+		},
+		URL,
+		message,
+		nil,
+	}
+}
+
 // Do Implements common.Action.Do().
 // It executes the Chat Action by posting the message to the chat application.
 func (action Action) Do() {
