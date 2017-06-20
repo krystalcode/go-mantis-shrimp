@@ -152,7 +152,7 @@ func v1Trigger(c *gin.Context) {
 	storage := c.MustGet("storage").(storage.Storage)
 
 	var watches []*common.Watch
-	for iID, _ := range aIDsInt {
+	for iID := range aIDsInt {
 		watch, err := storage.Get(iID)
 		if err != nil {
 			// Return a Not Found response if there is no Watch with such ID.
