@@ -19,6 +19,7 @@ import (
 	// Internal dependencies.
 	chat "github.com/krystalcode/go-mantis-shrimp/actions/chat"
 	common "github.com/krystalcode/go-mantis-shrimp/actions/common"
+	mailgun "github.com/krystalcode/go-mantis-shrimp/actions/mailgun"
 )
 
 // ActionWrapper provides a structure that holds an Action together with its type.
@@ -66,6 +67,14 @@ func (wrapper *ActionWrapper) UnmarshalJSON(bytes []byte) error {
 		}
 		wrapper.Action = action
 		break
+	case "mailgun_message":
+		var action mailgun.Action
+		err = json.Unmarshal(*jsonMap["action"], &action)
+		if err != nil {
+			return err
+		}
+		wrapper.Action = action
+		break
 	default:
 		return fmt.Errorf(
 			"unknown Action type \"%s\" while trying to decode an ActionWrapper JSON object",
@@ -85,6 +94,9 @@ func Wrapper(action common.Action) (*ActionWrapper, error) {
 	switch structType.PkgPath() {
 	case "github.com/krystalcode/go-mantis-shrimp/actions/chat":
 		actionType = "chat_message"
+		break
+	case "github.com/krystalcode/go-mantis-shrimp/actions/mailgun":
+		actionType = "mailgun_message"
 		break
 	default:
 		err := fmt.Errorf(
@@ -115,6 +127,7 @@ func Create(jsonAction []byte) (common.Action, error) {
 	// may also be registered independently, but for now this is sufficient.
 	if len(actionFactories) == 0 {
 		actionFactories["chat_message"] = chat.NewChatMessageAction
+		actionFactories["mailgun_message"] = mailgun.NewMailgunMessageAction
 	}
 
 	var jsonMap map[string]*json.RawMessage

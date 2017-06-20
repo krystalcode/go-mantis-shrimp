@@ -44,6 +44,19 @@
           ]
         }
       }
+    },
+    {
+      "type" : "mailgun_message",
+      "action" : {
+        "name" : "Mailgun Email Message",
+        "mailgun_domain" : "sandbox0sd9fg809sdf8g098sfd0g9809s8dfg.mailgun.org",
+        "mailgun_api_key" : "key-as9dg8asd9g8as9dg8a9sdg89asd8g9asdg8a",
+        "mailgun_public_api_key" : "pubkey-0a9sdfg0a9sdf0a9sdf09asd0fasd9f",
+        "message_from" : "from@example.com",
+        "message_to" : "to@example.com",
+        "message_subject" : "Testing Mantis Shrimp/Mailgun integration",
+        "message_body" : "This is an email containing a test text message."
+      }
     }
   ]
 }

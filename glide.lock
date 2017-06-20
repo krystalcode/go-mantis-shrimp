@@ -30,6 +30,8 @@ imports:
   version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/mailgun/mailgun-go.v1
+  version: a4002e2df2e8ca2da6a6fbb4a72871b504e49f50
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:

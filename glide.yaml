@@ -5,6 +5,8 @@ import:
   - redis
 - package: gopkg.in/gin-gonic/gin.v1
   version: ^1.1.4
+- package: gopkg.in/mailgun/mailgun-go.v1
+  version: ^1.1.0
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4
