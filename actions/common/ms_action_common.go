@@ -12,7 +12,7 @@ type Action interface {
 // (anonymous field). It provides all fields that should be present in all
 // Action implementations.
 type ActionBase struct {
-	// @I Added CreatedAt and UpdatedAt fields in Actions
+	// @I Add CreatedAt and UpdatedAt fields in Actions
 
 	Name string `json:"name"`
 }
