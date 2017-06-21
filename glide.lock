@@ -1,5 +1,5 @@
-hash: 56631ea4a944579566a17219fcd24da7e4c1225341aaf99f5bb09e26bf0d74f1
-updated: 2017-05-08T02:00:24.303458603Z
+hash: d5f91edd4fafd6eed3f105cc97afc97591ebdb8aafa64d750fc374d07ec7b1a4
+updated: 2017-06-21T11:57:34.16928193Z
 imports:
 - name: github.com/gin-gonic/gin
   version: d5b353c5d5a560322e6d96121c814115562501f7
@@ -15,15 +15,17 @@ imports:
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/mediocregopher/radix.v2
-  version: 1ac54a28f5934ea5e08f588647e734aba2383cb8
+  version: dbcfd490034f823788edc555737247e9ba628b6c
   subpackages:
   - redis
+- name: github.com/pkg/errors
+  version: c605e284fe17294bda444b34710735b29d1a9d90
 - name: golang.org/x/net
   version: f315505cf3349909cdf013ea56690da34e96a451
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: 9ccfe848b9db8435a24c424abbc07a921adf1df5
+  version: fb4cac33e3196ff7f507ab9b2d2a44b0142f5b5a
   subpackages:
   - unix
 - name: gopkg.in/gin-gonic/gin.v1
