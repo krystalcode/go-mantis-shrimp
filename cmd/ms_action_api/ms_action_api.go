@@ -150,7 +150,7 @@ func v1Trigger(c *gin.Context) {
 	storage := c.MustGet("storage").(storage.Storage)
 
 	var actions []*common.Action
-	for iID, _ := range aIDsInt {
+	for iID := range aIDsInt {
 		action, err := storage.Get(iID)
 		if err != nil {
 			panic(err)
