@@ -6,6 +6,7 @@ package msActionMailgun
 
 import (
 	// Testing packages.
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	// Mailgun.
@@ -62,7 +63,9 @@ func TestMailgunMessage_Success(t *testing.T) {
 	action := testAction()
 	client := MockMailgunClientSuccess{}
 	action.SetMailgunClient(client)
-	action.Do()
+	err := action.Do()
+
+	assert.Nil(t, err)
 }
 
 // @I Write tests for failure in MailgunMessageAction after having Action.Do()

@@ -74,17 +74,17 @@ func NewAction(name string, URL string, message Message) *Action {
 
 // Do Implements common.Action.Do().
 // It executes the Chat Action by posting the message to the chat application.
-func (action Action) Do() {
+func (action Action) Do() error {
 	// Convert the message to JSON.
 	body, err := json.Marshal(action.Message)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Create and send the request.
 	res, err := action.httpClient.Post(action.URL, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer res.Body.Close()
 
@@ -94,6 +94,8 @@ func (action Action) Do() {
 		fmt.Println("Headers:", res.Header)
 		fmt.Println("Body:", string(resBody))
 	}
+
+	return nil
 }
 
 // SetHTTPClient allows to inject an HTTP client into the corresponding field.

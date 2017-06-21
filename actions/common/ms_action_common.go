@@ -4,8 +4,7 @@ package msActionCommon
 // It simply defines a Do() function that does whatever the Action is meant to
 // do.
 type Action interface {
-	// @I Action.Do() functions should return errors
-	Do()
+	Do() error
 }
 
 // ActionBase should be included by all Action types as an embedded struct

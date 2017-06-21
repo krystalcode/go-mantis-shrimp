@@ -178,7 +178,8 @@ func v1Trigger(c *gin.Context) {
 	for _, pointer := range actions {
 		go func() {
 			action := *pointer
-			action.Do()
+			// @I Log errors occurring during execution of Actions
+			_ = action.Do()
 		}()
 	}
 

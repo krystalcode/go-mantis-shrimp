@@ -51,7 +51,7 @@ type Action struct {
 
 // Do Implements common.Action.Do().
 // It executes the Mailgun Action by sending the email message via Mailgun.
-func (action Action) Do() {
+func (action Action) Do() error {
 	message := mailgun.NewMessage(
 		action.MessageFrom,
 		action.MessageSubject,
@@ -60,8 +60,10 @@ func (action Action) Do() {
 	)
 	_, _, err := action.mailgunClient.Send(message)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 // SetMailgunClient allows to inject a Mailgun client into the corresponding
