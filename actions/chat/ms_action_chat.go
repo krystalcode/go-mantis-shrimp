@@ -64,7 +64,7 @@ type Action struct {
 func NewAction(name string, URL string, message Message) *Action {
 	return &Action{
 		common.ActionBase{
-			Name : name,
+			Name: name,
 		},
 		URL,
 		message,
