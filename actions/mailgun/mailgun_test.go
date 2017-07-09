@@ -68,5 +68,11 @@ func TestMailgunMessage_Success(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// @I Write tests for failure in MailgunMessageAction after having Action.Do()
-//    functions return errors
+func TestMailgunMessage_Failure(t *testing.T) {
+	action := testAction()
+	client := MockMailgunClientFailure{}
+	action.SetMailgunClient(client)
+	err := action.Do()
+
+	assert.NotNil(t, err)
+}
