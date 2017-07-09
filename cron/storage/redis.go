@@ -203,7 +203,7 @@ var NewRedisStorage = func(config map[string]interface{}) (Storage, error) {
 
 // set stores a Schedule object into a Redis Hash at the key corresponding to
 // the given ID.
-func (storage Redis) set(scheduleID int, schedule *schedule.Schedule, updateTimestamp  bool) error {
+func (storage Redis) set(scheduleID int, schedule *schedule.Schedule, updateTimestamp bool) error {
 	if storage.client == nil {
 		return fmt.Errorf("the Redis client has not been initialized yet")
 	}
