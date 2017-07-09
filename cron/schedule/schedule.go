@@ -16,9 +16,6 @@ import (
 // Schedule holds the data required for defining when a set of Watches should be
 // triggered e.g. how frequently and between which start and end times.
 type Schedule struct {
-	// @I Add a LastTriggered field that holds the time when the Schedule's
-	//    Watches were triggered
-
 	// The Schedule's unique identifier.
 	ID int `json:"id"`
 
