@@ -135,7 +135,7 @@ func run(schedule schedule.Schedule, triggers chan<- int, cronConfig *config.Con
 			// @I Update only the individual field instead of the full object.
 			now := time.Now()
 			schedule.Last = &now
-			storage.Update(&schedule)
+			storage.Update(&schedule, false)
 		}()
 	}
 
