@@ -66,7 +66,13 @@ func (storage Redis) Create(schedule *schedule.Schedule) (*int, error) {
 		return nil, err
 	}
 
-	err = storage.set(*scheduleID, schedule)
+	// Set the CreatedAt field, if not yet set.
+	now := time.Now()
+	if schedule.CreatedAt == nil {
+		schedule.CreatedAt = &now
+	}
+
+	err = storage.set(*scheduleID, schedule, true)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +111,8 @@ func (storage Redis) Get(scheduleID int) (*schedule.Schedule, error) {
 // Update implements Storage.Update(). It stores the given Schedule object as a Hash
 // in the Redis Storage, overriding the existing fields for the Hash with the
 // given ID.
-func (storage Redis) Update(schedule *schedule.Schedule) error {
-	return storage.set(schedule.ID, schedule)
+func (storage Redis) Update(schedule *schedule.Schedule, updateTimestamp bool) error {
+	return storage.set(schedule.ID, schedule, updateTimestamp)
 }
 
 // Search implements storage.Search(). It search for and returns Schedule
@@ -197,9 +203,15 @@ var NewRedisStorage = func(config map[string]interface{}) (Storage, error) {
 
 // set stores a Schedule object into a Redis Hash at the key corresponding to
 // the given ID.
-func (storage Redis) set(scheduleID int, schedule *schedule.Schedule) error {
+func (storage Redis) set(scheduleID int, schedule *schedule.Schedule, updateTimestamp  bool) error {
 	if storage.client == nil {
 		return fmt.Errorf("the Redis client has not been initialized yet")
+	}
+
+	// Update the UpdatedAt field.
+	if updateTimestamp {
+		now := time.Now()
+		schedule.UpdatedAt = &now
 	}
 
 	// Convert the Schedule object into the Hash fields that will be stored.
@@ -309,6 +321,16 @@ func toHashFields(schedule *schedule.Schedule) *[]interface{} {
 		hashFields = append(hashFields, "last")
 		hashFields = append(hashFields, schedule.Last.UnixNano())
 	}
+	// CreatedAt.
+	if schedule.CreatedAt != nil {
+		hashFields = append(hashFields, "created_at")
+		hashFields = append(hashFields, schedule.CreatedAt.UnixNano())
+	}
+	// UpdatedAt.
+	if schedule.UpdatedAt != nil {
+		hashFields = append(hashFields, "updated_at")
+		hashFields = append(hashFields, schedule.UpdatedAt.UnixNano())
+	}
 
 	return &hashFields
 }
@@ -378,6 +400,20 @@ func fromHashFields(hash *[]string) (*schedule.Schedule, error) {
 	// Last.
 	if v, ok := kvHash["last"]; ok {
 		schedule.Last, err = timeFromHashField(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// CreatedAt.
+	if v, ok := kvHash["created_at"]; ok {
+		schedule.CreatedAt, err = timeFromHashField(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// UpdatedAt.
+	if v, ok := kvHash["updated_at"]; ok {
+		schedule.UpdatedAt, err = timeFromHashField(v)
 		if err != nil {
 			return nil, err
 		}

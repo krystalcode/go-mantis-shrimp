@@ -24,7 +24,7 @@ type Storage interface {
 
 	Create(*schedule.Schedule) (*int, error)
 	Get(int) (*schedule.Schedule, error)
-	Update(*schedule.Schedule) error
+	Update(*schedule.Schedule, bool) error
 	Search(time.Duration) ([]*schedule.Schedule, error)
 }
 

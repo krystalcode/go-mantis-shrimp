@@ -18,7 +18,6 @@ import (
 type Schedule struct {
 	// @I Add a LastTriggered field that holds the time when the Schedule's
 	//    Watches were triggered
-	// @I Add CreatedAt and UpdatedAt fields in Schedule struct
 
 	// The Schedule's unique identifier.
 	ID int `json:"id"`
@@ -38,6 +37,10 @@ type Schedule struct {
 
 	// Boolean field that allows the ability to disable a Schedule.
 	Enabled bool `json:"enabled"`
+
+	// Schedule creation and update times.
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 }
 
 // Do ensures that any additional conditions are met before triggering the
